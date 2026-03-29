@@ -1,3 +1,5 @@
+<div align="center">
+
 # 🏋️ Gym Data Modeling
 
 [![SQL Server](https://img.shields.io/badge/SQL%20Server-2022-CC2927)](https://www.microsoft.com/sql-server)
@@ -22,6 +24,7 @@ gym-data-modeling/
 │   └── .env.example              # Modelo de variáveis de ambiente
 ├── sql/
 │   ├── scripts/
+│   │   ├── create_database.sql   # Criação do banco gym_db
 │   │   └── create_tables.sql     # DDL com constraints
 │   └── queries/                  # Queries de validação do modelo
 ├── docs/
@@ -50,7 +53,7 @@ gym-data-modeling/
 | Professor | Professores responsáveis pelas aulas |
 | Aula | Aulas oferecidas pela academia |
 | Produto | Produtos disponíveis para compra |
-| Treino | Treinos criados pelo personal |
+| Treino | Treinos criados |
 | Exercicio | Exercícios disponíveis com parte do corpo trabalhada |
 
 ### Tabelas intermediárias (N:N)
@@ -234,6 +237,8 @@ cd gym-data-modeling
 DB_PASSWORD=SuaSenhaForte123!
 ```
 
+> ⚠️ A senha precisa conter maiúscula, número e caractere especial — requisito do SQL Server.
+
 **3. Suba o container:**
 ```bash
 cd docker
@@ -243,6 +248,46 @@ docker compose up -d
 **4. Verifique se está rodando:**
 ```bash
 docker ps
+```
+
+O container `gym_sqlserver` deve aparecer com status `Up`.
+
+---
+
+## 🔌 Conectando ao Banco via VS Code
+
+**1. Instale a extensão:**
+
+Procure por `mssql` no marketplace do VS Code e instale a extensão **SQL Server (mssql)** da Microsoft.
+
+**2. Crie a conexão:**
+
+Abra a paleta de comandos com `Ctrl + Shift + P`, digite `MS SQL: Connect` e preencha:
+
+| Campo | Valor |
+|---|---|
+| Server name | `localhost,1433` |
+| Authentication type | SQL Login |
+| User name | `sa` |
+| Password | a definida no `.env` |
+| Trust server certificate | ✅ marcado |
+| Encrypt | Optional |
+
+**3. Crie o banco:**
+
+Execute o arquivo `sql/scripts/create_database.sql`:
+```sql
+CREATE DATABASE gym_db;
+```
+
+**4. Crie as tabelas:**
+
+Execute o arquivo `sql/scripts/create_tables.sql` — ele usa `IF OBJECT_ID IS NULL` para evitar erros caso as tabelas já existam, e pode ser reexecutado com segurança.
+
+**5. Verifique as tabelas criadas:**
+```sql
+USE gym_db;
+SELECT name FROM sys.tables;
 ```
 
 ---
@@ -264,6 +309,6 @@ docker ps
 - [x] Modelagem lógica (DER)
 - [x] Revisão e aprovação do MER e DER
 - [x] Container Docker configurado
-- [ ] DDL — create_tables.sql
+- [x] DDL — create_tables.sql
 - [ ] Geração de dados com Faker
 - [ ] Upload para AWS S3
