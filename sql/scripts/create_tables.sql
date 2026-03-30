@@ -100,7 +100,7 @@ CREATE TABLE Produto (
     Tipo_Produto    VARCHAR(50)     NOT NULL,
     Quantidade      INT             NOT NULL,
     Nome_Produto    VARCHAR(255)    NOT NULL,
-    Preco_Unitario  INT             NOT NULL,
+    Preco_Unitario  DECIMAL(10,2)            NOT NULL,
 
     CONSTRAINT PK_Produto PRIMARY KEY (ID_Produto)
 );
@@ -114,7 +114,7 @@ CREATE TABLE Produto_Aluno (
     ID_Produto          INT             NOT NULL,
     CPF_Aluno           VARCHAR(14)     NOT NULL,
     Quantidade_Pedida   INT             NOT NULL,
-    Preco_Compra        INT             NOT NULL,
+    Preco_Compra        DECIMAL(10,2)            NOT NULL,
 
     CONSTRAINT PK_Produto_Aluno     PRIMARY KEY (ID_Produto, CPF_Aluno),
     CONSTRAINT FK_ProdAl_Produto    FOREIGN KEY (ID_Produto) REFERENCES Produto(ID_Produto),

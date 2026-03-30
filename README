@@ -123,8 +123,8 @@ Esta seção registra todos os ajustes aplicados durante a revisão do MER e DER
 | Carga | Treino_Exercicio | INT | Detalhe do exercício no treino |
 | Reps | Treino_Exercicio | INT | Detalhe do exercício no treino |
 | Quantidade_Pedida | Produto_Aluno | INT | Quantidade comprada pelo aluno |
-| Preco_Compra | Produto_Aluno | INT | Preço registrado no momento da compra |
-| Preco_Unitario | Produto | INT | Preço de tabela do produto |
+| Preco_Compra | Produto_Aluno | DECIMAL(10,2) | Preço registrado no momento da compra |
+| Preco_Unitario | Produto | DECIMAL(10,2) | Preço de tabela do produto |
 
 ### Consistência MER → DER
 
@@ -191,7 +191,7 @@ Esta seção registra todos os ajustes aplicados durante a revisão do MER e DER
 | Tipo_Produto | VARCHAR(50) | |
 | Quantidade | INT | |
 | Nome_Produto | VARCHAR(255) | |
-| Preco_Unitario | INT | |
+| Preco_Unitario | DECIMAL(10,2) | |
 
 ### Produto_Aluno
 | Coluna | Tipo | Constraint |
@@ -199,7 +199,7 @@ Esta seção registra todos os ajustes aplicados durante a revisão do MER e DER
 | ID_Produto | INT | FK → Produto |
 | CPF_Aluno | VARCHAR(14) | FK → Aluno |
 | Quantidade_Pedida | INT | |
-| Preco_Compra | INT | |
+| Preco_Compra | DECIMAL(10,2) | |
 
 ### Treino
 | Coluna | Tipo | Constraint |
