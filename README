@@ -25,8 +25,12 @@ gym-data-modeling/
 ├── sql/
 │   ├── scripts/
 │   │   ├── create_database.sql   # Criação do banco gym_db
-│   │   └── create_tables.sql     # DDL com constraints
-│   └── queries/                  # Queries de validação do modelo
+│   │   ├── create_tables.sql     # DDL com constraints
+│   │   ├── drop_table.sql        # Drop das tabelas para reset
+│   │   └── views_test.sql        # Views para testes relacionados ao dataset e tabelas
+│   └── queries/                  # Queries de validação e análise
+├── faker/
+│   └── generate_data.py          # Geração de dados sintéticos com Faker
 ├── docs/
 │   ├── New_Structure/
 │   │   ├── New_MER.png           # MER atualizado (versão aprovada)
@@ -78,6 +82,28 @@ gym-data-modeling/
 
 ---
 
+## 💡 Decisões de Modelagem
+
+### `Produto_Aluno` — apenas FKs, sem atributos extras
+
+A tabela `Produto_Aluno` foi mantida apenas com suas duas chaves estrangeiras (`ID_Produto` e `CPF_Aluno`), sem colunas como `Quantidade_Pedida` ou `Preco_Compra`.
+
+O raciocínio é que valores derivados — como o total gasto por um aluno ou o preço de um produto em determinado período — podem ser calculados via SELECT cruzando `Produto_Aluno` com `Produto`. Armazenar esses valores na tabela intermediária criaria redundância e risco de inconsistência entre o preço armazenado e o preço real do produto.
+
+> 💡 Valores como total gasto por aluno e ticket médio são calculados via SELECT — não estão armazenados nas tabelas.
+
+### `Treino_Exercicio` — usa `Carga` e `Reps`, além das FKs
+
+Diferente de `Produto_Aluno`, a tabela `Treino_Exercicio` mantém os campos `Carga` e `Reps` intencionalmente.
+
+O raciocínio é que esses valores são **atributos do relacionamento em si** — não pertencem ao Treino isoladamente, nem ao Exercício isoladamente, mas à combinação dos dois. Não existe forma de derivar via SELECT que um aluno fez supino com 80kg e 10 repetições em determinado treino — esse dado precisa ser registrado. Removê-los significaria perda irreversível de informação.
+
+### `Preco_Unitario` — tipo `DECIMAL(10,2)`
+
+Valores monetários foram declarados como `DECIMAL(10,2)` em vez de `INT`, pois preços em reais possuem casas decimais. Usar `INT` forçaria arredondar todos os valores, causando imprecisão nos cálculos financeiros.
+
+---
+
 ### ✅ Mudanças de Modelagem — DER Aprovado
 
 Esta seção registra todos os ajustes aplicados durante a revisão do MER e DER. O modelo foi revisado e **aprovado** na versão atual.
@@ -108,7 +134,7 @@ Esta seção registra todos os ajustes aplicados durante a revisão do MER e DER
 |---|---|
 | Treino_Maquina → Treino_Exercicio | Tabela intermediária renomeada e expandida com campos Carga e Reps |
 | Maquina → Exercicio | Entidade renomeada e reformulada com Nome_Exercicio e Parte_Trabalhada |
-| Produto_Aluno adicionada | Tabela intermediária N:N entre Aluno e Produto, com Quantidade_Pedida e Preco_Compra |
+| Produto_Aluno adicionada | Tabela intermediária N:N entre Aluno e Produto |
 | CPF_Aluno removido de Produto | FK direta substituída pela tabela intermediária Produto_Aluno |
 | Tipo_Plano → Nome_Plano em Aluno | Renomeado para consistência com a PK da tabela Plano |
 | Nome_Plano em Plano | Tipo ampliado de VARCHAR(10) para VARCHAR(255) |
@@ -120,10 +146,8 @@ Esta seção registra todos os ajustes aplicados durante a revisão do MER e DER
 |---|---|---|---|
 | Duracao | Plano | INT | Estava no MER mas ausente no DER anterior |
 | Data_Criacao | Treino | DATE | Permite queries temporais |
-| Carga | Treino_Exercicio | INT | Detalhe do exercício no treino |
-| Reps | Treino_Exercicio | INT | Detalhe do exercício no treino |
-| Quantidade_Pedida | Produto_Aluno | INT | Quantidade comprada pelo aluno |
-| Preco_Compra | Produto_Aluno | DECIMAL(10,2) | Preço registrado no momento da compra |
+| Carga | Treino_Exercicio | INT | Atributo do relacionamento Treino x Exercicio |
+| Reps | Treino_Exercicio | INT | Atributo do relacionamento Treino x Exercicio |
 | Preco_Unitario | Produto | DECIMAL(10,2) | Preço de tabela do produto |
 
 ### Consistência MER → DER
@@ -134,7 +158,7 @@ Esta seção registra todos os ajustes aplicados durante a revisão do MER e DER
 | Aluno | Objetivo de Treino | — | ⚪ removido do modelo |
 | Maquina → Exercicio | Parte do corpo trabalhada | Parte_Trabalhada: VARCHAR(255) | ✅ renomeado |
 | Treino_Maquina → Treino_Exercicio | São usadas em | Treino_Exercicio com Carga e Reps | ✅ expandido |
-| Aluno ↔ Produto | Pode comprar (N:N) | Produto_Aluno com Quantidade_Pedida e Preco_Compra | ✅ adicionado |
+| Aluno ↔ Produto | Pode comprar (N:N) | Produto_Aluno | ✅ adicionado |
 | MER | Maquinas | Exercicio | ✅ atualizado |
 
 ---
@@ -198,8 +222,6 @@ Esta seção registra todos os ajustes aplicados durante a revisão do MER e DER
 |---|---|---|
 | ID_Produto | INT | FK → Produto |
 | CPF_Aluno | VARCHAR(14) | FK → Aluno |
-| Quantidade_Pedida | INT | |
-| Preco_Compra | DECIMAL(10,2) | |
 
 ### Treino
 | Coluna | Tipo | Constraint |
@@ -292,6 +314,40 @@ SELECT name FROM sys.tables;
 
 ---
 
+## 🐍 Gerando Dados com Faker
+
+O script `faker/generate_data.py` popula o banco com dados sintéticos realistas usando as bibliotecas `Faker` e `faker-br`.
+
+**1. Instale as dependências:**
+```bash
+pip install pyodbc faker faker-br
+```
+
+**2. Configure a senha** no arquivo `faker/generate_data.py` para corresponder à do seu `.env`.
+
+**3. Execute o script:**
+```bash
+python faker/generate_data.py
+```
+
+**Volumes gerados por tabela:**
+
+| Tabela | Registros |
+|---|---|
+| Plano | 4 |
+| Personal | 10 |
+| Professor | 5 |
+| Aluno | 50 |
+| Aula | 5 |
+| Aluno_Aula | ~100 |
+| Produto | 10 |
+| Produto_Aluno | ~60 |
+| Exercicio | 12 |
+| Treino | ~150 |
+| Treino_Exercicio | ~600 |
+
+---
+
 ## 🛠️ Tecnologias
 
 - **SQL Server 2022** — banco de dados relacional
@@ -310,5 +366,5 @@ SELECT name FROM sys.tables;
 - [x] Revisão e aprovação do MER e DER
 - [x] Container Docker configurado
 - [x] DDL — create_tables.sql
-- [ ] Geração de dados com Faker
+- [x] Geração de dados com Faker
 - [ ] Upload para AWS S3

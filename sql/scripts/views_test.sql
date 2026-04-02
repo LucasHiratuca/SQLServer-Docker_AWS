@@ -1,4 +1,4 @@
-SELECT DB_NAME();
+SELECT name FROM sys.databases;
 
 USE gym_db;
 

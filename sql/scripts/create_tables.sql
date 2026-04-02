@@ -113,8 +113,6 @@ IF OBJECT_ID('Produto_Aluno', 'U') IS NULL
 CREATE TABLE Produto_Aluno (
     ID_Produto          INT             NOT NULL,
     CPF_Aluno           VARCHAR(14)     NOT NULL,
-    Quantidade_Pedida   INT             NOT NULL,
-    Preco_Compra        DECIMAL(10,2)            NOT NULL,
 
     CONSTRAINT PK_Produto_Aluno     PRIMARY KEY (ID_Produto, CPF_Aluno),
     CONSTRAINT FK_ProdAl_Produto    FOREIGN KEY (ID_Produto) REFERENCES Produto(ID_Produto),
