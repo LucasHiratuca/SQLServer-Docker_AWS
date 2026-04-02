@@ -205,8 +205,8 @@ for aluno in random.sample(alunos, k=min(30, len(alunos))):
         if par not in pares_produto_aluno:
             try:
                 cursor.execute("""
-                    INSERT INTO Produto_Aluno (ID_Produto, CPF_Aluno) VALUES (?, ?)
-                """, id_produto, aluno)
+                    INSERT INTO Produto_Aluno (ID_Produto, CPF_Aluno, Quantidade_Comprada) VALUES (?, ?, ?)
+                """, id_produto, aluno, random.randint(1, 10))
                 pares_produto_aluno.add(par)
                 produto_aluno_inseridos += 1
             except:

@@ -84,17 +84,17 @@ gym-data-modeling/
 
 ## 💡 Decisões de Modelagem
 
-### `Produto_Aluno` — apenas FKs, sem atributos extras
+### `Produto_Aluno` — FKs com `Quantidade_Comprada`
 
-A tabela `Produto_Aluno` foi mantida apenas com suas duas chaves estrangeiras (`ID_Produto` e `CPF_Aluno`), sem colunas como `Quantidade_Pedida` ou `Preco_Compra`.
+A tabela `Produto_Aluno` registra a relação N:N entre alunos e produtos. Além das duas chaves estrangeiras (`ID_Produto` e `CPF_Aluno`), possui o campo `Quantidade_Comprada` — um atributo do próprio relacionamento, pois a quantidade comprada não pertence ao Produto isoladamente nem ao Aluno isoladamente, mas à combinação dos dois.
 
-O raciocínio é que valores derivados — como o total gasto por um aluno ou o preço de um produto em determinado período — podem ser calculados via SELECT cruzando `Produto_Aluno` com `Produto`. Armazenar esses valores na tabela intermediária criaria redundância e risco de inconsistência entre o preço armazenado e o preço real do produto.
+Valores derivados — como o total gasto por um aluno — são calculados via SELECT cruzando `Produto_Aluno` com `Produto`, sem necessidade de armazenamento redundante.
 
 > 💡 Valores como total gasto por aluno e ticket médio são calculados via SELECT — não estão armazenados nas tabelas.
 
 ### `Treino_Exercicio` — usa `Carga` e `Reps`, além das FKs
 
-Diferente de `Produto_Aluno`, a tabela `Treino_Exercicio` mantém os campos `Carga` e `Reps` intencionalmente.
+A tabela `Treino_Exercicio` mantém os campos `Carga` e `Reps` intencionalmente.
 
 O raciocínio é que esses valores são **atributos do relacionamento em si** — não pertencem ao Treino isoladamente, nem ao Exercício isoladamente, mas à combinação dos dois. Não existe forma de derivar via SELECT que um aluno fez supino com 80kg e 10 repetições em determinado treino — esse dado precisa ser registrado. Removê-los significaria perda irreversível de informação.
 
@@ -134,7 +134,7 @@ Esta seção registra todos os ajustes aplicados durante a revisão do MER e DER
 |---|---|
 | Treino_Maquina → Treino_Exercicio | Tabela intermediária renomeada e expandida com campos Carga e Reps |
 | Maquina → Exercicio | Entidade renomeada e reformulada com Nome_Exercicio e Parte_Trabalhada |
-| Produto_Aluno adicionada | Tabela intermediária N:N entre Aluno e Produto |
+| Produto_Aluno adicionada | Tabela intermediária N:N entre Aluno e Produto, com Quantidade_Comprada |
 | CPF_Aluno removido de Produto | FK direta substituída pela tabela intermediária Produto_Aluno |
 | Tipo_Plano → Nome_Plano em Aluno | Renomeado para consistência com a PK da tabela Plano |
 | Nome_Plano em Plano | Tipo ampliado de VARCHAR(10) para VARCHAR(255) |
@@ -148,6 +148,7 @@ Esta seção registra todos os ajustes aplicados durante a revisão do MER e DER
 | Data_Criacao | Treino | DATE | Permite queries temporais |
 | Carga | Treino_Exercicio | INT | Atributo do relacionamento Treino x Exercicio |
 | Reps | Treino_Exercicio | INT | Atributo do relacionamento Treino x Exercicio |
+| Quantidade_Comprada | Produto_Aluno | INT | Atributo do relacionamento Aluno x Produto |
 | Preco_Unitario | Produto | DECIMAL(10,2) | Preço de tabela do produto |
 
 ### Consistência MER → DER
@@ -158,7 +159,7 @@ Esta seção registra todos os ajustes aplicados durante a revisão do MER e DER
 | Aluno | Objetivo de Treino | — | ⚪ removido do modelo |
 | Maquina → Exercicio | Parte do corpo trabalhada | Parte_Trabalhada: VARCHAR(255) | ✅ renomeado |
 | Treino_Maquina → Treino_Exercicio | São usadas em | Treino_Exercicio com Carga e Reps | ✅ expandido |
-| Aluno ↔ Produto | Pode comprar (N:N) | Produto_Aluno | ✅ adicionado |
+| Aluno ↔ Produto | Pode comprar (N:N) | Produto_Aluno com Quantidade_Comprada | ✅ adicionado |
 | MER | Maquinas | Exercicio | ✅ atualizado |
 
 ---
@@ -222,6 +223,7 @@ Esta seção registra todos os ajustes aplicados durante a revisão do MER e DER
 |---|---|---|
 | ID_Produto | INT | FK → Produto |
 | CPF_Aluno | VARCHAR(14) | FK → Aluno |
+| Quantidade_Comprada | INT | |
 
 ### Treino
 | Coluna | Tipo | Constraint |
