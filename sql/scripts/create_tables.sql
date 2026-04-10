@@ -15,7 +15,8 @@ CREATE TABLE Plano (
     Nome_Plano      VARCHAR(255)    NOT NULL,
     Duracao         INT             NOT NULL,
 
-    CONSTRAINT PK_Plano PRIMARY KEY (Nome_Plano)
+    CONSTRAINT PK_Plano                     PRIMARY KEY (Nome_Plano),
+    CONSTRAINT CK_Plano_Duracao_Positiva    CHECK (Duracao > 0)
 );
 GO
 
@@ -45,8 +46,8 @@ CREATE TABLE Aluno (
     CPF_Personal    VARCHAR(14)     NOT NULL,
 
     CONSTRAINT PK_Aluno             PRIMARY KEY (CPF_Aluno),
-    CONSTRAINT FK_Aluno_Plano       FOREIGN KEY (Nome_Plano)    REFERENCES Plano(Nome_Plano),
-    CONSTRAINT FK_Aluno_Personal    FOREIGN KEY (CPF_Personal)  REFERENCES Personal(CPF_Personal)
+    CONSTRAINT FK_Aluno_Plano       FOREIGN KEY (Nome_Plano)   REFERENCES Plano(Nome_Plano),
+    CONSTRAINT FK_Aluno_Personal    FOREIGN KEY (CPF_Personal) REFERENCES Personal(CPF_Personal)
 );
 GO
 
@@ -100,9 +101,11 @@ CREATE TABLE Produto (
     Tipo_Produto    VARCHAR(50)     NOT NULL,
     Quantidade      INT             NOT NULL,
     Nome_Produto    VARCHAR(255)    NOT NULL,
-    Preco_Unitario  DECIMAL(10,2)            NOT NULL,
+    Preco_Unitario  DECIMAL(10,2)   NOT NULL,
 
-    CONSTRAINT PK_Produto PRIMARY KEY (ID_Produto)
+    CONSTRAINT PK_Produto                   PRIMARY KEY (ID_Produto),
+    CONSTRAINT CK_Produto_Preco_Positivo    CHECK (Preco_Unitario > 0),
+    CONSTRAINT CK_Produto_Quantidade_Valida CHECK (Quantidade >= 0)
 );
 GO
 
@@ -113,11 +116,12 @@ IF OBJECT_ID('Produto_Aluno', 'U') IS NULL
 CREATE TABLE Produto_Aluno (
     ID_Produto          INT             NOT NULL,
     CPF_Aluno           VARCHAR(14)     NOT NULL,
-    Quantidade_Comprada   INT             NOT NULL,
+    Quantidade_Comprada INT             NOT NULL,
 
-    CONSTRAINT PK_Produto_Aluno     PRIMARY KEY (ID_Produto, CPF_Aluno),
-    CONSTRAINT FK_ProdAl_Produto    FOREIGN KEY (ID_Produto) REFERENCES Produto(ID_Produto),
-    CONSTRAINT FK_ProdAl_Aluno      FOREIGN KEY (CPF_Aluno)  REFERENCES Aluno(CPF_Aluno)
+    CONSTRAINT PK_Produto_Aluno                     PRIMARY KEY (ID_Produto, CPF_Aluno),
+    CONSTRAINT FK_ProdAl_Produto                    FOREIGN KEY (ID_Produto) REFERENCES Produto(ID_Produto),
+    CONSTRAINT FK_ProdAl_Aluno                      FOREIGN KEY (CPF_Aluno)  REFERENCES Aluno(CPF_Aluno),
+    CONSTRAINT CK_Produto_Aluno_Quantidade_Positiva CHECK (Quantidade_Comprada > 0)
 );
 GO
 
@@ -157,8 +161,10 @@ CREATE TABLE Treino_Exercicio (
     Carga           INT             NOT NULL,
     Reps            INT             NOT NULL,
 
-    CONSTRAINT PK_Treino_Exercicio  PRIMARY KEY (ID_Treino, Nome_Exercicio),
-    CONSTRAINT FK_TrEx_Treino       FOREIGN KEY (ID_Treino)      REFERENCES Treino(ID_Treino),
-    CONSTRAINT FK_TrEx_Exercicio    FOREIGN KEY (Nome_Exercicio) REFERENCES Exercicio(Nome_Exercicio)
+    CONSTRAINT PK_Treino_Exercicio                      PRIMARY KEY (ID_Treino, Nome_Exercicio),
+    CONSTRAINT FK_TrEx_Treino                           FOREIGN KEY (ID_Treino)      REFERENCES Treino(ID_Treino),
+    CONSTRAINT FK_TrEx_Exercicio                        FOREIGN KEY (Nome_Exercicio) REFERENCES Exercicio(Nome_Exercicio),
+    CONSTRAINT CK_Treino_Exercicio_Carga_Nao_Negativa   CHECK (Carga >= 0),
+    CONSTRAINT CK_Treino_Exercicio_Reps_Validas         CHECK (Reps BETWEEN 1 AND 100)
 );
 GO

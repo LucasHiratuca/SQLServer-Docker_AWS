@@ -25,7 +25,8 @@ gym-data-modeling/
 ├── sql/
 │   ├── scripts/
 │   │   ├── create_database.sql   # Criação do banco gym_db
-│   │   ├── create_tables.sql     # DDL com constraints
+│   │   ├── create_tables.sql     # DDL com constraints e CHECK
+│   │   ├── create_indexes.sql    # Índices estratégicos nas FKs
 │   │   ├── drop_table.sql        # Drop das tabelas para reset
 │   │   └── views_test.sql        # Views para testes relacionados ao dataset e tabelas
 │   └── queries/                  # Queries de validação e análise
@@ -104,6 +105,38 @@ Valores monetários foram declarados como `DECIMAL(10,2)` em vez de `INT`, pois 
 
 ---
 
+## 🔒 Integridade e Performance
+
+### CHECK Constraints aplicadas
+
+| Constraint | Tabela | Regra |
+|---|---|---|
+| `CK_Plano_Duracao_Positiva` | Plano | `Duracao > 0` |
+| `CK_Produto_Preco_Positivo` | Produto | `Preco_Unitario > 0` |
+| `CK_Produto_Quantidade_Valida` | Produto | `Quantidade >= 0` |
+| `CK_Produto_Aluno_Quantidade_Positiva` | Produto_Aluno | `Quantidade_Comprada > 0` |
+| `CK_Treino_Exercicio_Carga_Nao_Negativa` | Treino_Exercicio | `Carga >= 0` |
+| `CK_Treino_Exercicio_Reps_Validas` | Treino_Exercicio | `Reps BETWEEN 1 AND 100` |
+
+### Índices estratégicos
+
+| Índice | Tabela | Coluna(s) | Objetivo |
+|---|---|---|---|
+| `IX_Aluno_Nome_Plano` | Aluno | `Nome_Plano` | FK → Plano |
+| `IX_Aluno_CPF_Personal` | Aluno | `CPF_Personal` | FK → Personal |
+| `IX_Aula_CPF_Professor` | Aula | `CPF_Professor` | FK → Professor |
+| `IX_Aluno_Aula_Nome_Aula` | Aluno_Aula | `Nome_Aula` | FK → Aula |
+| `IX_Aluno_Aula_CPF_Aluno` | Aluno_Aula | `CPF_Aluno` | FK → Aluno |
+| `IX_Produto_Aluno_ID_Produto` | Produto_Aluno | `ID_Produto` | FK → Produto |
+| `IX_Produto_Aluno_CPF_Aluno` | Produto_Aluno | `CPF_Aluno` | FK → Aluno |
+| `IX_Treino_CPF_Aluno` | Treino | `CPF_Aluno` | FK → Aluno |
+| `IX_Treino_Data_Criacao` | Treino | `Data_Criacao` | Acelerar consultas por período |
+| `IX_Treino_Exercicio_ID_Treino` | Treino_Exercicio | `ID_Treino` | FK → Treino |
+| `IX_Treino_Exercicio_Nome_Exercicio` | Treino_Exercicio | `Nome_Exercicio` | FK → Exercicio |
+| `IX_Treino_Exercicio_ID_Carga` | Treino_Exercicio | `ID_Treino, Carga` | Acelerar JOIN com filtro de carga |
+
+---
+
 ### ✅ Mudanças de Modelagem — DER Aprovado
 
 Esta seção registra todos os ajustes aplicados durante a revisão do MER e DER. O modelo foi revisado e **aprovado** na versão atual.
@@ -170,7 +203,7 @@ Esta seção registra todos os ajustes aplicados durante a revisão do MER e DER
 | Coluna | Tipo | Constraint |
 |---|---|---|
 | Nome_Plano | VARCHAR(255) | PK |
-| Duracao | INT | |
+| Duracao | INT | CHECK > 0 |
 
 ### Aluno
 | Coluna | Tipo | Constraint |
@@ -214,16 +247,16 @@ Esta seção registra todos os ajustes aplicados durante a revisão do MER e DER
 |---|---|---|
 | ID_Produto | INT IDENTITY | PK |
 | Tipo_Produto | VARCHAR(50) | |
-| Quantidade | INT | |
+| Quantidade | INT | CHECK >= 0 |
 | Nome_Produto | VARCHAR(255) | |
-| Preco_Unitario | DECIMAL(10,2) | |
+| Preco_Unitario | DECIMAL(10,2) | CHECK > 0 |
 
 ### Produto_Aluno
 | Coluna | Tipo | Constraint |
 |---|---|---|
 | ID_Produto | INT | FK → Produto |
 | CPF_Aluno | VARCHAR(14) | FK → Aluno |
-| Quantidade_Comprada | INT | |
+| Quantidade_Comprada | INT | CHECK > 0 |
 
 ### Treino
 | Coluna | Tipo | Constraint |
@@ -243,8 +276,8 @@ Esta seção registra todos os ajustes aplicados durante a revisão do MER e DER
 |---|---|---|
 | ID_Treino | INT | FK → Treino |
 | Nome_Exercicio | VARCHAR(255) | FK → Exercicio |
-| Carga | INT | |
-| Reps | INT | |
+| Carga | INT | CHECK >= 0 |
+| Reps | INT | CHECK 1–100 |
 
 ---
 
@@ -304,9 +337,13 @@ Execute o arquivo `sql/scripts/create_database.sql`:
 CREATE DATABASE gym_db;
 ```
 
-**4. Crie as tabelas:**
+**4. Crie as tabelas e índices:**
 
-Execute o arquivo `sql/scripts/create_tables.sql` — ele usa `IF OBJECT_ID IS NULL` para evitar erros caso as tabelas já existam, e pode ser reexecutado com segurança.
+Execute na ordem:
+```bash
+sql/scripts/create_tables.sql
+sql/scripts/create_indexes.sql
+```
 
 **5. Verifique as tabelas criadas:**
 ```sql
@@ -368,5 +405,6 @@ python faker/generate_data.py
 - [x] Revisão e aprovação do MER e DER
 - [x] Container Docker configurado
 - [x] DDL — create_tables.sql
+- [x] CHECK constraints e índices
 - [x] Geração de dados com Faker
 - [ ] Upload para AWS S3
