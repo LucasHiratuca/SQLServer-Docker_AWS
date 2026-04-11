@@ -32,6 +32,26 @@ gym-data-modeling/
 │   └── queries/                  # Queries de validação e análise
 ├── faker/
 │   └── generate_data.py          # Geração de dados sintéticos com Faker
+├── outputs/                      # Evidências de execução real de cada etapa
+│   ├── create_database/
+│   │   ├── creation.png          # Execução do CREATE DATABASE
+│   │   └── post_create.png       # Banco gym_db visível após criação
+│   ├── create_tables/
+│   │   ├── creation.png          # Execução do CREATE TABLE
+│   │   ├── no_tables.png         # Estado vazio antes da criação
+│   │   └── post_creation.png     # Tabelas listadas após criação
+│   ├── drop_table/
+│   │   ├── execution.png         # Execução do DROP
+│   │   ├── post_drop1.png        # Estado após primeiro drop
+│   │   └── post_drop2.png        # Estado após segundo drop
+│   ├── indexes/
+│   │   ├── clustered_ix_created.png  # Índice clustered criado
+│   │   └── index_creation.png        # Criação dos índices nas FKs
+│   ├── views_test/
+│   │   ├── select_sys_databases.png  # SELECT em sys.databases
+│   │   ├── select_sys_tables1.png    # SELECT em sys.tables (antes)
+│   │   └── select_sys_tables2.png    # SELECT em sys.tables (depois)
+│   └── criacao_container.png         # Container gym_sqlserver rodando
 ├── docs/
 │   ├── New_Structure/
 │   │   ├── New_MER.png           # MER atualizado (versão aprovada)
@@ -43,6 +63,21 @@ gym-data-modeling/
 ├── .gitignore
 └── README.md
 ```
+
+---
+
+## 🖼️ Evidências de Execução
+
+A pasta `outputs/` documenta cada etapa do projeto com screenshots reais de execução, provando que o ambiente funciona de ponta a ponta. Cada subpasta corresponde a um script ou etapa específica:
+
+| Pasta | O que documenta |
+|---|---|
+| `create_database/` | Criação do banco `gym_db` e confirmação via `sys.databases` |
+| `create_tables/` | Estado antes e depois da criação das tabelas |
+| `drop_table/` | Execução do drop e reset do banco |
+| `indexes/` | Criação dos índices nas FKs e índice clustered gerado pela PK |
+| `views_test/` | Queries de validação rodando contra o banco real |
+| `criacao_container.png` | Container `gym_sqlserver` ativo via Docker |
 
 ---
 
@@ -407,4 +442,5 @@ python faker/generate_data.py
 - [x] DDL — create_tables.sql
 - [x] CHECK constraints e índices
 - [x] Geração de dados com Faker
+- [x] Evidências de execução — outputs/
 - [ ] Upload para AWS S3
