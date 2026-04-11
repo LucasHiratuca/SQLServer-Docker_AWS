@@ -1,10 +1,17 @@
-# 🏋️ Gym Data Modeling
+<h1 align="center">🏋️ Gym Data Modeling</h1>
 
-![SQL Server](https://img.shields.io/badge/SQL%20Server-2022-CC2927?logo=microsoft-sql-server&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
-![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&logoColor=white)
-![AWS](https://img.shields.io/badge/AWS-S3-FF9900?logo=amazon-aws&logoColor=white)
-![License](https://img.shields.io/badge/license-MIT-22c55e)
+<p align="center">
+  <img src="https://img.shields.io/badge/SQL%20Server-2022-CC2927?logo=microsoft-sql-server&logoColor=white" />
+  <img src="https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white" />
+  <img src="https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&logoColor=white" />
+  <img src="https://img.shields.io/badge/AWS-S3-FF9900?logo=amazon-aws&logoColor=white" />
+  <img src="https://img.shields.io/badge/license-MIT-22c55e" />
+</p>
+
+<p align="center">
+  Projeto de engenharia de dados focado em modelagem relacional, containerização e cloud.<br/>
+  Do modelo conceitual (MER) à implementação física em SQL Server via Docker, com envio para AWS S3.
+</p>
 
 ---
 
@@ -33,23 +40,10 @@ gym-data-modeling/
 │   └── generate_data.py          # Geração de dados sintéticos com Faker
 ├── outputs/                      # Evidências de execução real de cada etapa
 │   ├── create_database/
-│   │   ├── creation.png
-│   │   └── post_create.png
 │   ├── create_tables/
-│   │   ├── creation.png
-│   │   ├── no_tables.png
-│   │   └── post_creation.png
 │   ├── drop_table/
-│   │   ├── execution.png
-│   │   ├── post_drop1.png
-│   │   └── post_drop2.png
 │   ├── indexes/
-│   │   ├── clustered_ix_created.png
-│   │   └── index_creation.png
 │   ├── views_test/
-│   │   ├── select_sys_databases.png
-│   │   ├── select_sys_tables1.png
-│   │   └── select_sys_tables2.png
 │   └── criacao_container.png
 ├── docs/
 │   ├── New_Structure/
@@ -67,7 +61,7 @@ gym-data-modeling/
 
 ## 🖼️ Evidências de Execução
 
-A pasta `outputs/` documenta cada etapa do projeto com screenshots reais de execução, provando que o ambiente funciona de ponta a ponta.
+A pasta `outputs/` documenta cada etapa com screenshots reais de execução, provando que o ambiente funciona de ponta a ponta.
 
 | Pasta | O que documenta |
 |---|---|
