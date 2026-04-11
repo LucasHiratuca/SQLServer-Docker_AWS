@@ -1,14 +1,12 @@
-<div align="center">
-  # 🏋️ Gym Data Modeling
-  
-  [![SQL Server](https://img.shields.io/badge/SQL%20Server-2022-CC2927)](https://www.microsoft.com/sql-server)
-  [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED)](https://www.docker.com/)
-  [![Python](https://img.shields.io/badge/Python-3.9%2B-blue)](https://www.python.org/)
-  [![AWS](https://img.shields.io/badge/AWS-S3-FF9900)](https://aws.amazon.com/)
-  [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+# 🏋️ Gym Data Modeling
 
-</div>
-
+<p align="center">
+  <img src="https://img.shields.io/badge/SQL%20Server-2022-CC2927" />
+  <img src="https://img.shields.io/badge/Docker-Compose-2496ED" />
+  <img src="https://img.shields.io/badge/Python-3.9%2B-blue" />
+  <img src="https://img.shields.io/badge/AWS-S3-FF9900" />
+  <img src="https://img.shields.io/badge/license-MIT-green" />
+</p>
 ## 📌 Sobre o Projeto
 
 Projeto de engenharia de dados focado em modelagem relacional, containerização e cloud. O objetivo é demonstrar a criação de um banco de dados do zero — desde o modelo conceitual (MER) até a implementação física em SQL Server rodando via Docker, com envio dos dados para AWS S3.
