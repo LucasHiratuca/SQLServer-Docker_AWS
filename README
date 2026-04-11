@@ -10,6 +10,8 @@
 
 </div>
 
+---
+
 ## 📌 Sobre o Projeto
 
 Projeto de engenharia de dados focado em modelagem relacional, containerização e cloud. O objetivo é demonstrar a criação de um banco de dados do zero — desde o modelo conceitual (MER) até a implementação física em SQL Server rodando via Docker, com envio dos dados para AWS S3.
@@ -17,6 +19,7 @@ Projeto de engenharia de dados focado em modelagem relacional, containerização
 ---
 
 ## 🗂️ Estrutura do Projeto
+
 ```
 gym-data-modeling/
 ├── docker/
@@ -172,13 +175,11 @@ Valores monetários foram declarados como `DECIMAL(10,2)` em vez de `INT`, pois 
 
 ---
 
-### ✅ Mudanças de Modelagem — DER Aprovado
+## ✅ Mudanças de Modelagem — DER Aprovado
 
 Esta seção registra todos os ajustes aplicados durante a revisão do MER e DER. O modelo foi revisado e **aprovado** na versão atual.
 
 > 🔄 **Migração SQLite → SQL Server:** A mudança de banco exigiu revisão geral dos tipos de dados. No SQLite, `INTEGER(11)` era aceito silenciosamente; no SQL Server, inteiros devem ser declarados como `INT` (sem parêntesis), e campos como CPF, RG e Telefone — que no SQLite eram armazenados como inteiros — precisaram ser migrados para `VARCHAR`, pois possuem zeros à esquerda ou caracteres não numéricos.
-
----
 
 ### Tipos de dados corrigidos
 
@@ -319,12 +320,14 @@ Esta seção registra todos os ajustes aplicados durante a revisão do MER e DER
 ## 🐳 Como Rodar
 
 **1. Clone o repositório:**
+
 ```bash
 git clone https://github.com/seu-usuario/gym-data-modeling.git
 cd gym-data-modeling
 ```
 
 **2. Crie o arquivo `.env` na pasta `docker/`:**
+
 ```
 DB_PASSWORD=SuaSenhaForte123!
 ```
@@ -332,12 +335,14 @@ DB_PASSWORD=SuaSenhaForte123!
 > ⚠️ A senha precisa conter maiúscula, número e caractere especial — requisito do SQL Server.
 
 **3. Suba o container:**
+
 ```bash
 cd docker
 docker compose up -d
 ```
 
 **4. Verifique se está rodando:**
+
 ```bash
 docker ps
 ```
@@ -368,6 +373,7 @@ Abra a paleta de comandos com `Ctrl + Shift + P`, digite `MS SQL: Connect` e pre
 **3. Crie o banco:**
 
 Execute o arquivo `sql/scripts/create_database.sql`:
+
 ```sql
 CREATE DATABASE gym_db;
 ```
@@ -375,12 +381,14 @@ CREATE DATABASE gym_db;
 **4. Crie as tabelas e índices:**
 
 Execute na ordem:
-```bash
+
+```
 sql/scripts/create_tables.sql
 sql/scripts/create_indexes.sql
 ```
 
 **5. Verifique as tabelas criadas:**
+
 ```sql
 USE gym_db;
 SELECT name FROM sys.tables;
@@ -393,6 +401,7 @@ SELECT name FROM sys.tables;
 O script `faker/generate_data.py` popula o banco com dados sintéticos realistas usando as bibliotecas `Faker` e `faker-br`.
 
 **1. Instale as dependências:**
+
 ```bash
 pip install pyodbc faker faker-br
 ```
@@ -400,6 +409,7 @@ pip install pyodbc faker faker-br
 **2. Configure a senha** no arquivo `faker/generate_data.py` para corresponder à do seu `.env`.
 
 **3. Execute o script:**
+
 ```bash
 python faker/generate_data.py
 ```
