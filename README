@@ -1,20 +1,25 @@
+<div align="center">
+
 # 🏋️ Gym Data Modeling
 
-<p align="center">
-  <img src="https://img.shields.io/badge/SQL%20Server-2022-CC2927?logo=microsoft-sql-server&logoColor=white" />
-  <img src="https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white" />
-  <img src="https://img.shields.io/badge/Python-3.9%2B-blue?logo=python&logoColor=white" />
-  <img src="https://img.shields.io/badge/AWS-S3-FF9900?logo=amazon-aws&logoColor=white" />
-  <img src="https://img.shields.io/badge/license-MIT-green" />
+<p>
+  <img src="https://img.shields.io/badge/SQL%20Server-2022-CC2927?style=for-the-badge&logo=microsoft-sql-server&logoColor=white" />
+  <img src="https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white" />
+  <img src="https://img.shields.io/badge/Python-3.9%2B-3776AB?style=for-the-badge&logo=python&logoColor=white" />
+  <img src="https://img.shields.io/badge/AWS-S3-FF9900?style=for-the-badge&logo=amazon-aws&logoColor=white" />
+  <img src="https://img.shields.io/badge/license-MIT-22c55e?style=for-the-badge" />
 </p>
 
-## 📌 Sobre o Projeto
+<p>
+  <strong>Projeto de engenharia de dados focado em modelagem relacional, containerização e cloud.</strong><br/>
+  Do modelo conceitual (MER) à implementação física em SQL Server via Docker, com envio para AWS S3.
+</p>
 
-Projeto de engenharia de dados focado em modelagem relacional, containerização e cloud. O objetivo é demonstrar a criação de um banco de dados do zero — desde o modelo conceitual (MER) até a implementação física em SQL Server rodando via Docker, com envio dos dados para AWS S3.
+</div>
 
 ---
 
-## 🗂️ Estrutura do Projeto
+## 📁 Estrutura do Projeto
 
 ```
 gym-data-modeling/
@@ -67,10 +72,10 @@ gym-data-modeling/
 
 ## 🖼️ Evidências de Execução
 
-A pasta `outputs/` documenta cada etapa do projeto com screenshots reais de execução, provando que o ambiente funciona de ponta a ponta. Cada subpasta corresponde a um script ou etapa específica:
+A pasta `outputs/` documenta cada etapa com screenshots reais, provando que o ambiente funciona de ponta a ponta.
 
 | Pasta | O que documenta |
-|---|---|
+|:---|:---|
 | `create_database/` | Criação do banco `gym_db` e confirmação via `sys.databases` |
 | `create_tables/` | Estado antes e depois da criação das tabelas |
 | `drop_table/` | Execução do drop e reset do banco |
@@ -85,35 +90,37 @@ A pasta `outputs/` documenta cada etapa do projeto com screenshots reais de exec
 ### Entidades
 
 | Entidade | Descrição |
-|---|---|
-| Aluno | Cadastro de alunos com plano e personal vinculados |
-| Plano | Tipos de plano disponíveis na academia |
-| Personal | Profissionais de personal trainer |
-| Professor | Professores responsáveis pelas aulas |
-| Aula | Aulas oferecidas pela academia |
-| Produto | Produtos disponíveis para compra |
-| Treino | Treinos criados |
-| Exercicio | Exercícios disponíveis com parte do corpo trabalhada |
+|:---|:---|
+| `Aluno` | Cadastro de alunos com plano e personal vinculados |
+| `Plano` | Tipos de plano disponíveis na academia |
+| `Personal` | Profissionais de personal trainer |
+| `Professor` | Professores responsáveis pelas aulas |
+| `Aula` | Aulas oferecidas pela academia |
+| `Produto` | Produtos disponíveis para compra |
+| `Treino` | Treinos criados |
+| `Exercicio` | Exercícios disponíveis com parte do corpo trabalhada |
 
-### Tabelas intermediárias (N:N)
+### Tabelas Intermediárias (N:N)
 
 | Tabela | Relacionamento |
-|---|---|
-| Aluno_Aula | Aluno participa de muitas aulas |
-| Produto_Aluno | Aluno pode comprar muitos produtos |
-| Treino_Exercicio | Treino contém muitos exercícios, com Carga e Reps |
+|:---|:---|
+| `Aluno_Aula` | Aluno participa de muitas aulas |
+| `Produto_Aluno` | Aluno pode comprar muitos produtos |
+| `Treino_Exercicio` | Treino contém muitos exercícios, com Carga e Reps |
 
 ### Diagramas
 
-#### Estrutura atual (aprovada)
+#### ✅ Estrutura Atual (Aprovada)
 
-![MER](docs/New_Structure/New_MER.png)
-![DER](docs/New_Structure/New_DER.png)
+| MER | DER |
+|:---:|:---:|
+| ![MER](docs/New_Structure/New_MER.png) | ![DER](docs/New_Structure/New_DER.png) |
 
-#### Estrutura anterior
+#### 🗂️ Estrutura Anterior
 
-![MER](docs/Old_Structure/Old_MER.png)
-![DER](docs/Old_Structure/Old_DER.png)
+| MER | DER |
+|:---:|:---:|
+| ![MER](docs/Old_Structure/Old_MER.png) | ![DER](docs/Old_Structure/Old_DER.png) |
 
 ---
 
@@ -123,15 +130,15 @@ A pasta `outputs/` documenta cada etapa do projeto com screenshots reais de exec
 
 A tabela `Produto_Aluno` registra a relação N:N entre alunos e produtos. Além das duas chaves estrangeiras (`ID_Produto` e `CPF_Aluno`), possui o campo `Quantidade_Comprada` — um atributo do próprio relacionamento, pois a quantidade comprada não pertence ao Produto isoladamente nem ao Aluno isoladamente, mas à combinação dos dois.
 
-Valores derivados — como o total gasto por um aluno — são calculados via SELECT cruzando `Produto_Aluno` com `Produto`, sem necessidade de armazenamento redundante.
+Valores derivados — como o total gasto por um aluno — são calculados via `SELECT` cruzando `Produto_Aluno` com `Produto`, sem necessidade de armazenamento redundante.
 
 > 💡 Valores como total gasto por aluno e ticket médio são calculados via SELECT — não estão armazenados nas tabelas.
 
-### `Treino_Exercicio` — usa `Carga` e `Reps`, além das FKs
+### `Treino_Exercicio` — `Carga` e `Reps` além das FKs
 
 A tabela `Treino_Exercicio` mantém os campos `Carga` e `Reps` intencionalmente.
 
-O raciocínio é que esses valores são **atributos do relacionamento em si** — não pertencem ao Treino isoladamente, nem ao Exercício isoladamente, mas à combinação dos dois. Não existe forma de derivar via SELECT que um aluno fez supino com 80kg e 10 repetições em determinado treino — esse dado precisa ser registrado. Removê-los significaria perda irreversível de informação.
+Esses valores são **atributos do relacionamento em si** — não pertencem ao Treino isoladamente, nem ao Exercício isoladamente, mas à combinação dos dois. Não existe forma de derivar via `SELECT` que um aluno fez supino com 80kg e 10 repetições em determinado treino — esse dado precisa ser registrado. Removê-los significaria perda irreversível de informação.
 
 ### `Preco_Unitario` — tipo `DECIMAL(10,2)`
 
@@ -141,175 +148,178 @@ Valores monetários foram declarados como `DECIMAL(10,2)` em vez de `INT`, pois 
 
 ## 🔒 Integridade e Performance
 
-### CHECK Constraints aplicadas
+### CHECK Constraints
 
 | Constraint | Tabela | Regra |
-|---|---|---|
-| `CK_Plano_Duracao_Positiva` | Plano | `Duracao > 0` |
-| `CK_Produto_Preco_Positivo` | Produto | `Preco_Unitario > 0` |
-| `CK_Produto_Quantidade_Valida` | Produto | `Quantidade >= 0` |
-| `CK_Produto_Aluno_Quantidade_Positiva` | Produto_Aluno | `Quantidade_Comprada > 0` |
-| `CK_Treino_Exercicio_Carga_Nao_Negativa` | Treino_Exercicio | `Carga >= 0` |
-| `CK_Treino_Exercicio_Reps_Validas` | Treino_Exercicio | `Reps BETWEEN 1 AND 100` |
+|:---|:---|:---|
+| `CK_Plano_Duracao_Positiva` | `Plano` | `Duracao > 0` |
+| `CK_Produto_Preco_Positivo` | `Produto` | `Preco_Unitario > 0` |
+| `CK_Produto_Quantidade_Valida` | `Produto` | `Quantidade >= 0` |
+| `CK_Produto_Aluno_Quantidade_Positiva` | `Produto_Aluno` | `Quantidade_Comprada > 0` |
+| `CK_Treino_Exercicio_Carga_Nao_Negativa` | `Treino_Exercicio` | `Carga >= 0` |
+| `CK_Treino_Exercicio_Reps_Validas` | `Treino_Exercicio` | `Reps BETWEEN 1 AND 100` |
 
-### Índices estratégicos
+### Índices Estratégicos
 
 | Índice | Tabela | Coluna(s) | Objetivo |
-|---|---|---|---|
-| `IX_Aluno_Nome_Plano` | Aluno | `Nome_Plano` | FK → Plano |
-| `IX_Aluno_CPF_Personal` | Aluno | `CPF_Personal` | FK → Personal |
-| `IX_Aula_CPF_Professor` | Aula | `CPF_Professor` | FK → Professor |
-| `IX_Aluno_Aula_Nome_Aula` | Aluno_Aula | `Nome_Aula` | FK → Aula |
-| `IX_Aluno_Aula_CPF_Aluno` | Aluno_Aula | `CPF_Aluno` | FK → Aluno |
-| `IX_Produto_Aluno_ID_Produto` | Produto_Aluno | `ID_Produto` | FK → Produto |
-| `IX_Produto_Aluno_CPF_Aluno` | Produto_Aluno | `CPF_Aluno` | FK → Aluno |
-| `IX_Treino_CPF_Aluno` | Treino | `CPF_Aluno` | FK → Aluno |
-| `IX_Treino_Data_Criacao` | Treino | `Data_Criacao` | Acelerar consultas por período |
-| `IX_Treino_Exercicio_ID_Treino` | Treino_Exercicio | `ID_Treino` | FK → Treino |
-| `IX_Treino_Exercicio_Nome_Exercicio` | Treino_Exercicio | `Nome_Exercicio` | FK → Exercicio |
-| `IX_Treino_Exercicio_ID_Carga` | Treino_Exercicio | `ID_Treino, Carga` | Acelerar JOIN com filtro de carga |
+|:---|:---|:---|:---|
+| `IX_Aluno_Nome_Plano` | `Aluno` | `Nome_Plano` | FK → Plano |
+| `IX_Aluno_CPF_Personal` | `Aluno` | `CPF_Personal` | FK → Personal |
+| `IX_Aula_CPF_Professor` | `Aula` | `CPF_Professor` | FK → Professor |
+| `IX_Aluno_Aula_Nome_Aula` | `Aluno_Aula` | `Nome_Aula` | FK → Aula |
+| `IX_Aluno_Aula_CPF_Aluno` | `Aluno_Aula` | `CPF_Aluno` | FK → Aluno |
+| `IX_Produto_Aluno_ID_Produto` | `Produto_Aluno` | `ID_Produto` | FK → Produto |
+| `IX_Produto_Aluno_CPF_Aluno` | `Produto_Aluno` | `CPF_Aluno` | FK → Aluno |
+| `IX_Treino_CPF_Aluno` | `Treino` | `CPF_Aluno` | FK → Aluno |
+| `IX_Treino_Data_Criacao` | `Treino` | `Data_Criacao` | Acelerar consultas por período |
+| `IX_Treino_Exercicio_ID_Treino` | `Treino_Exercicio` | `ID_Treino` | FK → Treino |
+| `IX_Treino_Exercicio_Nome_Exercicio` | `Treino_Exercicio` | `Nome_Exercicio` | FK → Exercicio |
+| `IX_Treino_Exercicio_ID_Carga` | `Treino_Exercicio` | `ID_Treino, Carga` | Acelerar JOIN com filtro de carga |
 
 ---
 
 ## ✅ Mudanças de Modelagem — DER Aprovado
 
-Esta seção registra todos os ajustes aplicados durante a revisão do MER e DER. O modelo foi revisado e **aprovado** na versão atual.
+> 🔄 **Migração SQLite → SQL Server:** A mudança de banco exigiu revisão geral dos tipos de dados. No SQLite, `INTEGER(11)` era aceito silenciosamente; no SQL Server, inteiros devem ser declarados como `INT` (sem parêntesis), e campos como CPF, RG e Telefone precisaram ser migrados para `VARCHAR`, pois possuem zeros à esquerda ou caracteres não numéricos.
 
-> 🔄 **Migração SQLite → SQL Server:** A mudança de banco exigiu revisão geral dos tipos de dados. No SQLite, `INTEGER(11)` era aceito silenciosamente; no SQL Server, inteiros devem ser declarados como `INT` (sem parêntesis), e campos como CPF, RG e Telefone — que no SQLite eram armazenados como inteiros — precisaram ser migrados para `VARCHAR`, pois possuem zeros à esquerda ou caracteres não numéricos.
+### Tipos de Dados Corrigidos
 
-### Tipos de dados corrigidos
+| Coluna | Tabela | Tipo Anterior | Tipo Correto | Motivo |
+|:---|:---|:---|:---|:---|
+| `CPF_Aluno` | Produto, Treino, Aluno | `INTEGER(11/14)` | `VARCHAR(14)` | CPF tem zeros à esquerda |
+| `CPF_Personal` | Personal | `INTEGER(11)` | `VARCHAR(14)` | CPF tem zeros à esquerda |
+| `CPF_Professor` | Professor | `INTEGER(11)` | `VARCHAR(14)` | CPF tem zeros à esquerda |
+| `RG` | Aluno, Personal, Professor | `INTEGER(11)` | `VARCHAR(20)` | RG tem zeros à esquerda e letras |
+| `Telefone` | Aluno, Personal, Professor | `INTEGER(11)` | `VARCHAR(15)` | Telefone não é número |
+| `ID_Treino` | Treino_Exercicio | `INTEGER(11)` | `INT` | SQL Server não usa parêntesis em INT |
+| `Duracao` | Plano | `INTEGER(10)` | `INT` | SQL Server não usa parêntesis em INT |
+| `Carga` | Treino_Exercicio | `INTEGER(10)` | `INT` | SQL Server não usa parêntesis em INT |
+| `Reps` | Treino_Exercicio | `INTEGER(10)` | `INT` | SQL Server não usa parêntesis em INT |
 
-| Coluna | Tabela | Tipo anterior | Tipo correto | Motivo |
-|---|---|---|---|---|
-| CPF_Aluno | Produto, Treino, Aluno | INTEGER(11/14) | VARCHAR(14) | CPF tem zeros à esquerda |
-| CPF_Personal | Personal | INTEGER(11) | VARCHAR(14) | CPF tem zeros à esquerda |
-| CPF_Professor | Professor | INTEGER(11) | VARCHAR(14) | CPF tem zeros à esquerda |
-| RG | Aluno, Personal, Professor | INTEGER(11) | VARCHAR(20) | RG tem zeros à esquerda e letras |
-| Telefone | Aluno, Personal, Professor | INTEGER(11) | VARCHAR(15) | Telefone não é número |
-| ID_Treino | Treino_Exercicio | INTEGER(11) | INT | SQL Server não usa parêntesis em INT |
-| Duracao | Plano | INTEGER(10) | INT | SQL Server não usa parêntesis em INT |
-| Carga | Treino_Exercicio | INTEGER(10) | INT | SQL Server não usa parêntesis em INT |
-| Reps | Treino_Exercicio | INTEGER(10) | INT | SQL Server não usa parêntesis em INT |
-
-> Os campos `VARCHAR` foram ajustados pois CPF, RG e Telefone possuem zeros à esquerda ou caracteres não numéricos. Os demais tipos foram corrigidos por diferença de sintaxe entre SQLite e SQL Server.
-
-### Mudanças estruturais
+### Mudanças Estruturais
 
 | Situação | Descrição |
-|---|---|
-| Treino_Maquina → Treino_Exercicio | Tabela intermediária renomeada e expandida com campos Carga e Reps |
-| Maquina → Exercicio | Entidade renomeada e reformulada com Nome_Exercicio e Parte_Trabalhada |
-| Produto_Aluno adicionada | Tabela intermediária N:N entre Aluno e Produto, com Quantidade_Comprada |
-| CPF_Aluno removido de Produto | FK direta substituída pela tabela intermediária Produto_Aluno |
-| Tipo_Plano → Nome_Plano em Aluno | Renomeado para consistência com a PK da tabela Plano |
-| Nome_Plano em Plano | Tipo ampliado de VARCHAR(10) para VARCHAR(255) |
-| Preco_Unitario adicionado em Produto | Campo necessário para registro de preço por unidade |
+|:---|:---|
+| `Treino_Maquina` → `Treino_Exercicio` | Tabela intermediária renomeada e expandida com campos Carga e Reps |
+| `Maquina` → `Exercicio` | Entidade renomeada e reformulada com Nome_Exercicio e Parte_Trabalhada |
+| `Produto_Aluno` adicionada | Tabela intermediária N:N entre Aluno e Produto, com Quantidade_Comprada |
+| `CPF_Aluno` removido de Produto | FK direta substituída pela tabela intermediária Produto_Aluno |
+| `Tipo_Plano` → `Nome_Plano` em Aluno | Renomeado para consistência com a PK da tabela Plano |
+| `Nome_Plano` em Plano | Tipo ampliado de `VARCHAR(10)` para `VARCHAR(255)` |
+| `Preco_Unitario` adicionado em Produto | Campo necessário para registro de preço por unidade |
 
-### Adições ao modelo
+### Adições ao Modelo
 
 | Campo | Tabela | Tipo | Motivo |
-|---|---|---|---|
-| Duracao | Plano | INT | Estava no MER mas ausente no DER anterior |
-| Data_Criacao | Treino | DATE | Permite queries temporais |
-| Carga | Treino_Exercicio | INT | Atributo do relacionamento Treino x Exercicio |
-| Reps | Treino_Exercicio | INT | Atributo do relacionamento Treino x Exercicio |
-| Quantidade_Comprada | Produto_Aluno | INT | Atributo do relacionamento Aluno x Produto |
-| Preco_Unitario | Produto | DECIMAL(10,2) | Preço de tabela do produto |
+|:---|:---|:---|:---|
+| `Duracao` | Plano | `INT` | Estava no MER mas ausente no DER anterior |
+| `Data_Criacao` | Treino | `DATE` | Permite queries temporais |
+| `Carga` | Treino_Exercicio | `INT` | Atributo do relacionamento Treino x Exercicio |
+| `Reps` | Treino_Exercicio | `INT` | Atributo do relacionamento Treino x Exercicio |
+| `Quantidade_Comprada` | Produto_Aluno | `INT` | Atributo do relacionamento Aluno x Produto |
+| `Preco_Unitario` | Produto | `DECIMAL(10,2)` | Preço de tabela do produto |
 
 ### Consistência MER → DER
 
 | Entidade/Relação | MER | DER | Status |
-|---|---|---|---|
-| Plano | Duração em Dias | Duracao: INT | ✅ corrigido |
+|:---|:---|:---|:---:|
+| Plano | Duração em Dias | `Duracao: INT` | ✅ corrigido |
 | Aluno | Objetivo de Treino | — | ⚪ removido do modelo |
-| Maquina → Exercicio | Parte do corpo trabalhada | Parte_Trabalhada: VARCHAR(255) | ✅ renomeado |
+| Maquina → Exercicio | Parte do corpo trabalhada | `Parte_Trabalhada: VARCHAR(255)` | ✅ renomeado |
 | Treino_Maquina → Treino_Exercicio | São usadas em | Treino_Exercicio com Carga e Reps | ✅ expandido |
 | Aluno ↔ Produto | Pode comprar (N:N) | Produto_Aluno com Quantidade_Comprada | ✅ adicionado |
 | MER | Maquinas | Exercicio | ✅ atualizado |
 
 ---
 
-## 📐 Modelo atual — estrutura das tabelas
+## 📋 Modelo Atual — Estrutura das Tabelas
 
-### Plano
-| Coluna | Tipo | Constraint |
-|---|---|---|
-| Nome_Plano | VARCHAR(255) | PK |
-| Duracao | INT | CHECK > 0 |
+<details>
+<summary><strong>🗃️ Ver todas as tabelas</strong></summary>
 
-### Aluno
-| Coluna | Tipo | Constraint |
-|---|---|---|
-| CPF_Aluno | VARCHAR(14) | PK |
-| Telefone_Aluno | VARCHAR(15) | |
-| Nome_Aluno | VARCHAR(255) | |
-| Nome_Plano | VARCHAR(255) | FK → Plano |
-| CPF_Personal | VARCHAR(14) | FK → Personal |
+<br/>
 
-### Personal
+#### `Plano`
 | Coluna | Tipo | Constraint |
-|---|---|---|
-| CPF_Personal | VARCHAR(14) | PK |
-| Nome | VARCHAR(255) | |
-| Horarios_Personal | TIME | |
-| Telefone_Personal | VARCHAR(15) | |
+|:---|:---|:---|
+| `Nome_Plano` | `VARCHAR(255)` | PK |
+| `Duracao` | `INT` | CHECK > 0 |
 
-### Professor
+#### `Aluno`
 | Coluna | Tipo | Constraint |
-|---|---|---|
-| CPF_Professor | VARCHAR(14) | PK |
-| Nome | VARCHAR(255) | |
-| Horarios_Professor | TIME | |
-| Telefone_Professor | VARCHAR(15) | |
+|:---|:---|:---|
+| `CPF_Aluno` | `VARCHAR(14)` | PK |
+| `Telefone_Aluno` | `VARCHAR(15)` | |
+| `Nome_Aluno` | `VARCHAR(255)` | |
+| `Nome_Plano` | `VARCHAR(255)` | FK → Plano |
+| `CPF_Personal` | `VARCHAR(14)` | FK → Personal |
 
-### Aula
+#### `Personal`
 | Coluna | Tipo | Constraint |
-|---|---|---|
-| Nome_Aula | VARCHAR(20) | PK |
-| CPF_Professor | VARCHAR(14) | FK → Professor |
+|:---|:---|:---|
+| `CPF_Personal` | `VARCHAR(14)` | PK |
+| `Nome` | `VARCHAR(255)` | |
+| `Horarios_Personal` | `TIME` | |
+| `Telefone_Personal` | `VARCHAR(15)` | |
 
-### Aluno_Aula
+#### `Professor`
 | Coluna | Tipo | Constraint |
-|---|---|---|
-| Nome_Aula | VARCHAR(20) | FK → Aula |
-| CPF_Aluno | VARCHAR(14) | FK → Aluno |
+|:---|:---|:---|
+| `CPF_Professor` | `VARCHAR(14)` | PK |
+| `Nome` | `VARCHAR(255)` | |
+| `Horarios_Professor` | `TIME` | |
+| `Telefone_Professor` | `VARCHAR(15)` | |
 
-### Produto
+#### `Aula`
 | Coluna | Tipo | Constraint |
-|---|---|---|
-| ID_Produto | INT IDENTITY | PK |
-| Tipo_Produto | VARCHAR(50) | |
-| Quantidade | INT | CHECK >= 0 |
-| Nome_Produto | VARCHAR(255) | |
-| Preco_Unitario | DECIMAL(10,2) | CHECK > 0 |
+|:---|:---|:---|
+| `Nome_Aula` | `VARCHAR(20)` | PK |
+| `CPF_Professor` | `VARCHAR(14)` | FK → Professor |
 
-### Produto_Aluno
+#### `Aluno_Aula`
 | Coluna | Tipo | Constraint |
-|---|---|---|
-| ID_Produto | INT | FK → Produto |
-| CPF_Aluno | VARCHAR(14) | FK → Aluno |
-| Quantidade_Comprada | INT | CHECK > 0 |
+|:---|:---|:---|
+| `Nome_Aula` | `VARCHAR(20)` | FK → Aula |
+| `CPF_Aluno` | `VARCHAR(14)` | FK → Aluno |
 
-### Treino
+#### `Produto`
 | Coluna | Tipo | Constraint |
-|---|---|---|
-| ID_Treino | INT IDENTITY | PK |
-| Data_Criacao | DATE | |
-| CPF_Aluno | VARCHAR(14) | FK → Aluno |
+|:---|:---|:---|
+| `ID_Produto` | `INT IDENTITY` | PK |
+| `Tipo_Produto` | `VARCHAR(50)` | |
+| `Quantidade` | `INT` | CHECK >= 0 |
+| `Nome_Produto` | `VARCHAR(255)` | |
+| `Preco_Unitario` | `DECIMAL(10,2)` | CHECK > 0 |
 
-### Exercicio
+#### `Produto_Aluno`
 | Coluna | Tipo | Constraint |
-|---|---|---|
-| Nome_Exercicio | VARCHAR(255) | PK |
-| Parte_Trabalhada | VARCHAR(255) | |
+|:---|:---|:---|
+| `ID_Produto` | `INT` | FK → Produto |
+| `CPF_Aluno` | `VARCHAR(14)` | FK → Aluno |
+| `Quantidade_Comprada` | `INT` | CHECK > 0 |
 
-### Treino_Exercicio
+#### `Treino`
 | Coluna | Tipo | Constraint |
-|---|---|---|
-| ID_Treino | INT | FK → Treino |
-| Nome_Exercicio | VARCHAR(255) | FK → Exercicio |
-| Carga | INT | CHECK >= 0 |
-| Reps | INT | CHECK 1–100 |
+|:---|:---|:---|
+| `ID_Treino` | `INT IDENTITY` | PK |
+| `Data_Criacao` | `DATE` | |
+| `CPF_Aluno` | `VARCHAR(14)` | FK → Aluno |
+
+#### `Exercicio`
+| Coluna | Tipo | Constraint |
+|:---|:---|:---|
+| `Nome_Exercicio` | `VARCHAR(255)` | PK |
+| `Parte_Trabalhada` | `VARCHAR(255)` | |
+
+#### `Treino_Exercicio`
+| Coluna | Tipo | Constraint |
+|:---|:---|:---|
+| `ID_Treino` | `INT` | FK → Treino |
+| `Nome_Exercicio` | `VARCHAR(255)` | FK → Exercicio |
+| `Carga` | `INT` | CHECK >= 0 |
+| `Reps` | `INT` | CHECK 1–100 |
+
+</details>
 
 ---
 
@@ -324,7 +334,7 @@ cd gym-data-modeling
 
 **2. Crie o arquivo `.env` na pasta `docker/`:**
 
-```
+```env
 DB_PASSWORD=SuaSenhaForte123!
 ```
 
@@ -358,7 +368,7 @@ Procure por `mssql` no marketplace do VS Code e instale a extensão **SQL Server
 Abra a paleta de comandos com `Ctrl + Shift + P`, digite `MS SQL: Connect` e preencha:
 
 | Campo | Valor |
-|---|---|
+|:---|:---|
 | Server name | `localhost,1433` |
 | Authentication type | SQL Login |
 | User name | `sa` |
@@ -374,9 +384,7 @@ Execute o arquivo `sql/scripts/create_database.sql`:
 CREATE DATABASE gym_db;
 ```
 
-**4. Crie as tabelas e índices:**
-
-Execute na ordem:
+**4. Crie as tabelas e índices** na ordem:
 
 ```
 sql/scripts/create_tables.sql
@@ -413,29 +421,40 @@ python faker/generate_data.py
 **Volumes gerados por tabela:**
 
 | Tabela | Registros |
-|---|---|
-| Plano | 4 |
-| Personal | 10 |
-| Professor | 5 |
-| Aluno | 50 |
-| Aula | 5 |
-| Aluno_Aula | ~100 |
-| Produto | 10 |
-| Produto_Aluno | ~60 |
-| Exercicio | 12 |
-| Treino | ~150 |
-| Treino_Exercicio | ~600 |
+|:---|:---:|
+| `Plano` | 4 |
+| `Personal` | 10 |
+| `Professor` | 5 |
+| `Aluno` | 50 |
+| `Aula` | 5 |
+| `Aluno_Aula` | ~100 |
+| `Produto` | 10 |
+| `Produto_Aluno` | ~60 |
+| `Exercicio` | 12 |
+| `Treino` | ~150 |
+| `Treino_Exercicio` | ~600 |
 
 ---
 
 ## 🛠️ Tecnologias
 
-- **SQL Server 2022** — banco de dados relacional
-- **Docker** — containerização do ambiente
-- **Python** — geração de dados com Faker e integração com AWS
-- **AWS S3** — armazenamento dos dados na nuvem
-- **draw.io** — modelagem do MER e DER
-- **VS Code** — ambiente de desenvolvimento
+<p>
+  <img src="https://img.shields.io/badge/SQL%20Server%202022-CC2927?style=flat-square&logo=microsoft-sql-server&logoColor=white" />
+  <img src="https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white" />
+  <img src="https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white" />
+  <img src="https://img.shields.io/badge/AWS%20S3-FF9900?style=flat-square&logo=amazon-aws&logoColor=white" />
+  <img src="https://img.shields.io/badge/draw.io-F08705?style=flat-square&logo=diagrams.net&logoColor=white" />
+  <img src="https://img.shields.io/badge/VS%20Code-007ACC?style=flat-square&logo=visual-studio-code&logoColor=white" />
+</p>
+
+| Tecnologia | Uso |
+|:---|:---|
+| **SQL Server 2022** | Banco de dados relacional |
+| **Docker** | Containerização do ambiente |
+| **Python** | Geração de dados com Faker e integração com AWS |
+| **AWS S3** | Armazenamento dos dados na nuvem |
+| **draw.io** | Modelagem do MER e DER |
+| **VS Code** | Ambiente de desenvolvimento |
 
 ---
 
@@ -445,8 +464,8 @@ python faker/generate_data.py
 - [x] Modelagem lógica (DER)
 - [x] Revisão e aprovação do MER e DER
 - [x] Container Docker configurado
-- [x] DDL — create_tables.sql
+- [x] DDL — `create_tables.sql`
 - [x] CHECK constraints e índices
 - [x] Geração de dados com Faker
-- [x] Evidências de execução — outputs/
+- [x] Evidências de execução — `outputs/`
 - [ ] Upload para AWS S3
