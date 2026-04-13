@@ -12,16 +12,19 @@ conn = pyodbc.connect(
     "Driver={ODBC Driver 17 for SQL Server};"
     "Server=localhost,1433;"           
     "Database=gym_db;"                 
-    "UID=sa;"                          # ← Usuário padrão do SQL Server no Docker
-    f"PWD={os.getenv('DB_PASSWORD')};" # ← Pega a senha do .env
+    "UID=sa;"                          
+    f"PWD={os.getenv('DB_PASSWORD')};" 
     "TrustServerCertificate=yes;"
 )
 
 def extrair_todas_tabelas():
     # Criar pasta para os CSVs
     data_atual = datetime.now().strftime('%Y%m%d_%H%M%S')
-    pasta_saida = f"extract_data_{data_atual}"
-    os.makedirs(f"pipeline/extractions/{pasta_saida}", exist_ok=True)
+    caminho_completo = f"pipeline/extractions/extract_{data_atual}"  # ← Guarda o caminho completo
+    
+    # Criar a pasta
+    os.makedirs(caminho_completo, exist_ok=True)
+    print(f"📁 Criando pasta: {caminho_completo}")
     
     # 1. Buscar lista de todas as tabelas do banco
     query_tabelas = """
@@ -33,7 +36,7 @@ def extrair_todas_tabelas():
     
     tabelas = pd.read_sql(query_tabelas, conn)
     
-    print(f"Encontradas {len(tabelas)} tabelas:")
+    print(f"\nEncontradas {len(tabelas)} tabelas:")
     print("-" * 50)
     
     # 2. Para cada tabela, extrair e salvar
@@ -46,19 +49,22 @@ def extrair_todas_tabelas():
             # Extrair dados da tabela
             df = pd.read_sql(f"SELECT * FROM [{nome_tabela}]", conn)
             
-            # Salvar como CSV
-            arquivo_csv = f"{pasta_saida}/{nome_tabela}.csv"
+            # Salvar como CSV - USANDO O CAMINHO COMPLETO
+            arquivo_csv = f"{caminho_completo}/{nome_tabela}.csv"  # ← Corrigido!
             df.to_csv(arquivo_csv, index=False, encoding='utf-8-sig')
             
-            print(f"   ✅ {len(df)} registros salvos em {arquivo_csv}")
+            print(f"   ✅ {len(df)} registros salvos")
+            print(f"   📄 {arquivo_csv}")
             
         except Exception as e:
             print(f"   ❌ Erro na tabela {nome_tabela}: {e}")
     
     print("\n" + "="*50)
-    print(f"✅ Exportação concluída! Arquivos salvos em: {pasta_saida}")
+    print(f"✅ Exportação concluída!")
+    print(f"📁 Arquivos salvos em: {caminho_completo}")
     
     conn.close()
 
 # Executar
-extrair_todas_tabelas()
+if __name__ == "__main__":
+    extrair_todas_tabelas()
