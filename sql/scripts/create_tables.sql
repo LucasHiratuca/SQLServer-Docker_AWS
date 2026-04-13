@@ -43,7 +43,7 @@ CREATE TABLE Aluno (
     Nome_Aluno      VARCHAR(255)    NOT NULL,
     Telefone_Aluno  VARCHAR(15)     NOT NULL,
     Nome_Plano      VARCHAR(255)    NOT NULL,
-    CPF_Personal    VARCHAR(14)     NOT NULL,
+    CPF_Personal    VARCHAR(14)    NULL,
 
     CONSTRAINT PK_Aluno             PRIMARY KEY (CPF_Aluno),
     CONSTRAINT FK_Aluno_Plano       FOREIGN KEY (Nome_Plano)   REFERENCES Plano(Nome_Plano),
