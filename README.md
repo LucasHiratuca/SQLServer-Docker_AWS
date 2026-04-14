@@ -4,20 +4,19 @@
   <img src="https://img.shields.io/badge/SQL%20Server-2022-CC2927?logo=microsoft-sql-server&logoColor=white" />
   <img src="https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white" />
   <img src="https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&logoColor=white" />
-  <img src="https://img.shields.io/badge/AWS-S3-FF9900?logo=amazon-aws&logoColor=white" />
   <img src="https://img.shields.io/badge/license-MIT-22c55e" />
 </p>
 
 <p align="center">
   Projeto de engenharia de dados focado em modelagem relacional, containerização e cloud.<br/>
-  Do modelo conceitual (MER) à implementação física em SQL Server via Docker, com envio para AWS S3.
+  Do modelo conceitual (MER) à implementação física em SQL Server via Docker.
 </p>
 
 ---
 
 ## 📌 Sobre o Projeto
 
-Projeto de engenharia de dados focado em modelagem relacional, containerização e cloud. O objetivo é demonstrar a criação de um banco de dados do zero — desde o modelo conceitual (MER) até a implementação física em SQL Server rodando via Docker, com envio dos dados para AWS S3.
+Projeto de engenharia de dados focado em modelagem relacional, containerização e pipeline ETL. O objetivo é demonstrar a criação de um banco de dados do zero — desde o modelo conceitual (MER) até a implementação física em SQL Server rodando via Docker, com geração de dados sintéticos e validação via queries analíticas.
 
 ---
 
@@ -35,17 +34,37 @@ gym-data-modeling/
 │   │   ├── create_indexes.sql    # Índices estratégicos nas FKs
 │   │   ├── drop_table.sql        # Drop das tabelas para reset
 │   │   └── views_test.sql        # Views para testes relacionados ao dataset e tabelas
-│   └── queries/                  # Queries de validação e análise
+│   └── queries/
+│       └── select_overall_test.sql  # Query de validação geral dos dados gerados
 ├── faker/
+│   ├── .env                      # Variáveis de ambiente (senha do banco)
 │   └── generate_data.py          # Geração de dados sintéticos com Faker
 ├── pipeline/
 │   └── ETL_gym.py                # Pipeline ETL: Extract, Transform e Load
 ├── outputs/                      # Evidências de execução real de cada etapa
 │   ├── create_database/
+│   │   ├── creation.png
+│   │   └── post_create.png
 │   ├── create_tables/
+│   │   ├── creation.png
+│   │   ├── no_tables.png
+│   │   └── post_creation.png
 │   ├── drop_table/
+│   │   ├── execution.png
+│   │   ├── post_drop1.png
+│   │   └── post_drop2.png
+│   ├── faker_outputs/
+│   │   ├── faker_success.png
+│   │   └── select_overall_data/
+│   │       ├── faker_aluno.png
+│   │       ├── faker_aula.png
+│   │       └── faker_produtoAluno.png
 │   ├── indexes/
+│   │   ├── clustered_ix_created.png
+│   │   └── index_creation.png
 │   ├── views_test/
+│   │   ├── select_sys_databases.png
+│   │   └── select_sys_tables1.png
 │   └── criacao_container.png
 ├── docs/
 │   ├── New_Structure/
@@ -70,6 +89,8 @@ A pasta `outputs/` documenta cada etapa com screenshots reais de execução, pro
 | `create_database/` | Criação do banco `gym_db` e confirmação via `sys.databases` |
 | `create_tables/` | Estado antes e depois da criação das tabelas |
 | `drop_table/` | Execução do drop e reset do banco |
+| `faker_outputs/` | Execução bem-sucedida do script Faker e resultado das queries de validação |
+| `faker_outputs/select_overall_data/` | Queries rodando contra dados reais: Aluno, Aula e Produto_Aluno |
 | `indexes/` | Criação dos índices nas FKs e índice clustered gerado pela PK |
 | `views_test/` | Queries de validação rodando contra o banco real |
 | `criacao_container.png` | Container `gym_sqlserver` ativo via Docker |
@@ -227,28 +248,6 @@ Esta seção registra todos os ajustes aplicados durante a revisão do MER e DER
 | `Tipo_Plano` → `Nome_Plano` em Aluno | Renomeado para consistência com a PK da tabela Plano |
 | `Nome_Plano` em Plano | Tipo ampliado de `VARCHAR(10)` para `VARCHAR(255)` |
 | `Preco_Unitario` adicionado em Produto | Campo necessário para registro de preço por unidade |
-
-### Adições ao modelo
-
-| Campo | Tabela | Tipo | Motivo |
-|---|---|---|---|
-| `Duracao` | Plano | `INT` | Estava no MER mas ausente no DER anterior |
-| `Data_Criacao` | Treino | `DATE` | Permite queries temporais |
-| `Carga` | Treino_Exercicio | `INT` | Atributo do relacionamento Treino x Exercicio |
-| `Reps` | Treino_Exercicio | `INT` | Atributo do relacionamento Treino x Exercicio |
-| `Quantidade_Comprada` | Produto_Aluno | `INT` | Atributo do relacionamento Aluno x Produto |
-| `Preco_Unitario` | Produto | `DECIMAL(10,2)` | Preço de tabela do produto |
-
-### Consistência MER → DER
-
-| Entidade/Relação | MER | DER | Status |
-|---|---|---|---|
-| Plano | Duração em Dias | `Duracao: INT` | ✅ corrigido |
-| Aluno | Objetivo de Treino | — | ⚪ removido do modelo |
-| Maquina → Exercicio | Parte do corpo trabalhada | `Parte_Trabalhada: VARCHAR(255)` | ✅ renomeado |
-| Treino_Maquina → Treino_Exercicio | São usadas em | Treino_Exercicio com Carga e Reps | ✅ expandido |
-| Aluno ↔ Produto | Pode comprar (N:N) | Produto_Aluno com Quantidade_Comprada | ✅ adicionado |
-| MER | Maquinas | Exercicio | ✅ atualizado |
 
 ---
 
@@ -428,21 +427,53 @@ SELECT name FROM sys.tables;
 
 O script `faker/generate_data.py` popula o banco com dados sintéticos realistas usando as bibliotecas `Faker` e `faker-br`.
 
-**1. Instale as dependências:**
+### Pré-requisitos
+
+**1. Instale o ODBC Driver para SQL Server:**
+
+O driver ODBC é necessário para que o `pyodbc` consiga se conectar ao SQL Server. Instale o **ODBC Driver 17 ou 18 for SQL Server** de acordo com seu sistema operacional:
+
+- **Windows:** [Download Microsoft ODBC Driver](https://learn.microsoft.com/pt-br/sql/connect/odbc/download-odbc-driver-for-sql-server)
+- **Linux (Ubuntu/Debian):**
 
 ```bash
-pip install pyodbc faker faker-br
+curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+curl https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list \
+  | sudo tee /etc/apt/sources.list.d/mssql-release.list
+sudo apt-get update
+sudo ACCEPT_EULA=Y apt-get install -y msodbcsql18
 ```
 
-**2. Configure a senha** no arquivo `faker/generate_data.py` para corresponder à do seu `.env`.
+- **macOS:**
 
-**3. Execute o script:**
+```bash
+brew tap microsoft/mssql-release https://github.com/Microsoft/homebrew-mssql-release
+brew install msodbcsql18
+```
+
+**2. Instale as dependências Python:**
+
+```bash
+pip install pyodbc faker faker-br python-dotenv
+```
+
+**3. Configure o `.env` na pasta `faker/`:**
+
+Crie o arquivo `faker/.env` com a senha do banco:
+
+```env
+DB_PASSWORD=SuaSenhaForte123!
+```
+
+> ⚠️ Use a mesma senha definida no `docker/.env`.
+
+**4. Execute o script:**
 
 ```bash
 python faker/generate_data.py
 ```
 
-**Volumes gerados por tabela:**
+### Volumes gerados por tabela
 
 | Tabela | Registros |
 |---|---|
@@ -460,6 +491,41 @@ python faker/generate_data.py
 
 ---
 
+## 🔍 Validando os Dados Gerados
+
+O arquivo `sql/queries/select_overall_test.sql` contém queries de validação para confirmar que os dados foram inseridos corretamente e que as relações entre tabelas estão íntegras.
+
+```sql
+USE gym_db
+
+-- Todas as aulas cadastradas
+SELECT *
+FROM Aula;
+GO
+
+-- Professores vinculados a aulas específicas (validação de FK)
+SELECT *
+FROM Professor
+WHERE CPF_Professor = '416.972.853-09'
+OR CPF_Professor = '968.054.713-20';
+GO
+
+-- Compras registradas na tabela intermediária
+SELECT *
+FROM Produto_Aluno;
+GO
+
+-- Alunos que realizaram pelo menos uma compra
+SELECT *
+FROM Aluno
+WHERE CPF_Aluno IN (SELECT CPF_Aluno FROM Produto_Aluno);
+GO
+```
+
+Os resultados dessas queries estão documentados em `outputs/faker_outputs/select_overall_data/`.
+
+---
+
 ## 🛠️ Tecnologias
 
 | Tecnologia | Uso |
@@ -467,7 +533,7 @@ python faker/generate_data.py
 | **SQL Server 2022** | Banco de dados relacional |
 | **Docker** | Containerização do ambiente |
 | **Python** | Geração de dados com Faker e pipeline ETL |
-| **AWS S3** | Armazenamento dos dados na nuvem |
+| **ODBC Driver 17/18** | Conexão Python → SQL Server via pyodbc |
 | **draw.io** | Modelagem do MER e DER |
 | **VS Code** | Ambiente de desenvolvimento |
 
@@ -482,7 +548,9 @@ python faker/generate_data.py
 - [x] DDL — `create_tables.sql`
 - [x] CHECK constraints e índices
 - [x] Geração de dados com Faker
+- [x] `.env` isolado na pasta `faker/`
 - [x] Evidências de execução — `outputs/`
+- [x] Queries de validação dos dados gerados — `select_overall_test.sql`
 - [x] Pipeline ETL — Extract e Transform (base)
 - [ ] Star Schema — `gym_dw`
 - [ ] Load dimensional completo
