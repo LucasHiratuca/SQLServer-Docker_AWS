@@ -38,6 +38,8 @@ gym-data-modeling/
 │   └── queries/                  # Queries de validação e análise
 ├── faker/
 │   └── generate_data.py          # Geração de dados sintéticos com Faker
+├── pipeline/
+│   └── ETL_gym.py                # Pipeline ETL: Extract, Transform e Load
 ├── outputs/                      # Evidências de execução real de cada etapa
 │   ├── create_database/
 │   ├── create_tables/
@@ -71,6 +73,37 @@ A pasta `outputs/` documenta cada etapa com screenshots reais de execução, pro
 | `indexes/` | Criação dos índices nas FKs e índice clustered gerado pela PK |
 | `views_test/` | Queries de validação rodando contra o banco real |
 | `criacao_container.png` | Container `gym_sqlserver` ativo via Docker |
+
+---
+
+## 🔁 Pipeline ETL
+
+O arquivo `pipeline/ETL_gym.py` implementa as três etapas do pipeline ETL conectando `gym_db` (banco transacional) ao `gym_dw` (banco analítico).
+
+> ⚠️ **Esta pipeline está em desenvolvimento.** O Star Schema do `gym_dw` ainda será modelado e as etapas de Transform e Load serão expandidas conforme a modelagem dimensional avança.
+
+### Etapas
+
+**Extract** — extrai todas as tabelas do `gym_db` e salva em CSV com timestamp, criando um snapshot do banco a cada execução em `pipeline/extractions/`.
+
+**Transform** — executa queries SQL diretamente no SQL Server, cruzando tabelas do `gym_db` para gerar visões analíticas no `gym_dw`. As transformações atuais focam em análise de alunos:
+
+| Tabela gerada | O que calcula |
+|---|---|
+| `transform_ranking_alunos` | Ranking de alunos por número de treinos |
+| `transform_ranking_exercicios` | Exercícios mais realizados, com carga e reps médias |
+| `transform_ranking_partes` | Partes do corpo mais treinadas |
+| `transform_treinos_por_mes` | Evolução mensal de treinos com acumulado |
+| `transform_treino_por_plano` | Média de treinos por aluno em cada plano |
+
+**Load** — base preparada para receber as tabelas do Star Schema (`dim_aluno`, `dim_exercicio`, `dim_data`, `fato_treino`) após a modelagem dimensional ser concluída.
+
+### Executar
+
+```bash
+pip install pyodbc pandas python-dotenv
+python pipeline/ETL_gym.py
+```
 
 ---
 
@@ -433,7 +466,7 @@ python faker/generate_data.py
 |---|---|
 | **SQL Server 2022** | Banco de dados relacional |
 | **Docker** | Containerização do ambiente |
-| **Python** | Geração de dados com Faker e integração com AWS |
+| **Python** | Geração de dados com Faker e pipeline ETL |
 | **AWS S3** | Armazenamento dos dados na nuvem |
 | **draw.io** | Modelagem do MER e DER |
 | **VS Code** | Ambiente de desenvolvimento |
@@ -450,4 +483,7 @@ python faker/generate_data.py
 - [x] CHECK constraints e índices
 - [x] Geração de dados com Faker
 - [x] Evidências de execução — `outputs/`
+- [x] Pipeline ETL — Extract e Transform (base)
+- [ ] Star Schema — `gym_dw`
+- [ ] Load dimensional completo
 - [ ] Upload para AWS S3
