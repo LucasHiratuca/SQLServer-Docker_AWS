@@ -4,19 +4,20 @@
   <img src="https://img.shields.io/badge/SQL%20Server-2022-CC2927?logo=microsoft-sql-server&logoColor=white" />
   <img src="https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white" />
   <img src="https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&logoColor=white" />
+  <img src="https://img.shields.io/badge/AWS-S3-FF9900?logo=amazon-aws&logoColor=white" />
   <img src="https://img.shields.io/badge/license-MIT-22c55e" />
 </p>
 
 <p align="center">
   Projeto de engenharia de dados focado em modelagem relacional, containerização e pipeline ETL.<br/>
-  Do modelo conceitual (MER) à implementação física em SQL Server via Docker, com Data Warehouse dimensional.
+  Do modelo conceitual (MER) à implementação física em SQL Server via Docker, com Data Warehouse dimensional e upload para AWS S3.
 </p>
 
 ---
 
 ## 📌 Sobre o Projeto
 
-Projeto de engenharia de dados construído do zero — desde o modelo conceitual (MER) até a implementação física em SQL Server rodando via Docker. Inclui geração de dados sintéticos com Faker, pipeline ETL completo e um Data Warehouse dimensional (Star Schema) focado na análise de vendas da academia.
+Projeto de engenharia de dados construído do zero — desde o modelo conceitual (MER) até a implementação física em SQL Server rodando via Docker. Inclui geração de dados sintéticos com Faker, queries analíticas sobre as relações N:N, pipeline ETL completo, um Data Warehouse dimensional (Star Schema) focado na análise de vendas da academia e upload dos dados para AWS S3.
 
 ---
 
@@ -38,7 +39,7 @@ gym-data-modeling/
 │       └── Old_MER.png
 ├── faker/
 │   ├── .env                            # Variáveis de ambiente (senha do banco)
-│   └── generate_data.py               # Geração de dados sintéticos com Faker
+│   └── generate_data.py                # Geração de dados sintéticos com Faker
 ├── outputs/                            # Evidências de execução real de cada etapa
 │   ├── create_data_warehouse/
 │   │   ├── dw_creation.png
@@ -47,13 +48,15 @@ gym-data-modeling/
 │   │   ├── creation.png
 │   │   └── post_create.png
 │   ├── create_tables/
-│   │   ├── creation.png
 │   │   ├── no_tables.png
 │   │   └── post_creation.png
 │   ├── drop_table/
 │   │   ├── execution.png
 │   │   ├── post_drop1.png
 │   │   └── post_drop2.png
+│   ├── ETL_outputs/
+│   │   ├── CSV_path.png
+│   │   └── ETL_execution.png
 │   ├── faker_outputs/
 │   │   ├── faker_success.png
 │   │   └── select_overall_data/
@@ -62,19 +65,35 @@ gym-data-modeling/
 │   │       └── faker_produtoAluno.png
 │   ├── indexes/
 │   │   ├── clust_ix_created_dw.png
-│   │   ├── clustered_ix_created.png
-│   │   └── index_creation.png
-│   ├── views_test/
-│   │   ├── select_sys_databases.png
-│   │   ├── select_sys_tables1.png
-│   │   └── select_sys_tables2.png
+│   │   └── clustered_ix_created.png
+│   ├── queries/
+│   │   ├── Aluno_Compra_Select.png
+│   │   ├── Aula-Aluno.png
+│   │   ├── Tabela_Treino-Ex-Aluno.png
+│   │   └── query_parametrizada/
+│   │       ├── Alunos_em_Aula.png
+│   │       └── Aula_p_Aluno.png
+│   └── views_test/
+│       ├── select_sys_databases.png
+│       ├── select_sys_tables1.png
+│       └── select_sys_tables2.png
 │   └── criacao_container.png
 ├── pipeline/
+│   ├── aws_bucket/
+│   │   ├── .env                        # Credenciais AWS e nome do bucket
+│   │   └── upload_s3.py                # Upload da Fato_Venda para o S3
+│   ├── .env                            # Variáveis de ambiente (senha do banco)
 │   ├── ETL_gym.py                      # Pipeline ETL: Extract, Load e Transform
 │   └── extractions/                    # CSVs por execução + staging de vendas
 ├── sql/
 │   ├── queries/
-│   │   └── select_overall_test.sql     # Query de validação geral dos dados gerados
+│   │   ├── parametrizada/
+│   │   │   ├── .env                    # Variáveis de ambiente (senha do banco)
+│   │   │   └── aluno_aula_parametrizada.py  # Query interativa Aluno ↔ Aula
+│   │   ├── select_aluno_aula.sql       # Query N:N — Aluno, Aula e Professor
+│   │   ├── select_aluno_produto.sql    # Query N:N — Aluno, Produto e valor final
+│   │   ├── select_overall_test.sql     # Query de validação geral dos dados gerados
+│   │   └── select_treino.sql           # Query N:N — Treino, Exercício e Volume
 │   ├── script_dw/
 │   │   ├── create_dw.sql               # DDL do gym_dw — Star Schema (Dim + Fato)
 │   │   └── create_index_dw.sql         # Índices do gym_dw
@@ -100,11 +119,227 @@ A pasta `outputs/` documenta cada etapa com screenshots reais, provando que o am
 | `create_database/` | Criação do banco `gym_db` e confirmação via `sys.databases` |
 | `create_tables/` | Estado antes e depois da criação das tabelas |
 | `drop_table/` | Execução do drop e reset do banco |
+| `ETL_outputs/` | Execução da pipeline ETL e caminho dos CSVs gerados |
 | `faker_outputs/` | Execução bem-sucedida do script Faker |
 | `faker_outputs/select_overall_data/` | Queries rodando contra dados reais: Aluno, Aula e Produto_Aluno |
 | `indexes/` | Criação dos índices nas FKs do gym_db e do gym_dw |
+| `queries/` | Resultado das três queries N:N rodando contra dados reais |
+| `queries/query_parametrizada/` | Query interativa nos dois contextos: aluno e professor |
 | `views_test/` | Queries de validação rodando contra o banco real |
 | `criacao_container.png` | Container `gym_sqlserver` ativo via Docker |
+
+---
+
+## 🔍 Queries — Relações N:N
+
+A pasta `sql/queries/` contém três queries SQL que atravessam as tabelas intermediárias do `gym_db`, expondo os dados de cada relação N:N de forma legível e analítica.
+
+### Aluno ↔ Aula (`select_aluno_aula.sql`)
+
+Cruza `Aluno_Aula` com `Aluno`, `Aula` e `Professor`, mostrando quais aulas cada aluno frequenta e qual professor ministra cada aula.
+
+```sql
+USE gym_db
+
+SELECT
+    au.Nome_Aula,
+    al.Nome_Aluno,
+    p.Nome AS Nome_Professor
+FROM Aluno_Aula aa
+JOIN Aluno     al ON al.CPF_Aluno      = aa.CPF_Aluno
+JOIN Aula      au ON au.Nome_Aula      = aa.Nome_Aula
+JOIN Professor p  ON p.CPF_Professor   = au.CPF_Professor;
+GO
+```
+
+Os resultados estão documentados em `outputs/queries/Aula-Aluno.png`.
+
+---
+
+### Treino ↔ Exercício (`select_treino.sql`)
+
+Cruza `Treino_Exercicio` com `Treino`, `Exercicio` e `Aluno`, expondo carga, repetições e calculando o **volume total** de cada exercício por treino (`Carga × Reps`).
+
+```sql
+USE gym_db
+
+SELECT
+    t.ID_Treino,
+    a.Nome_Aluno,
+    e.Nome_Exercicio,
+    e.Parte_Trabalhada,
+    te.Carga,
+    te.Carga * te.Reps AS Volume_Total,
+    te.Reps
+FROM Treino_Exercicio te
+JOIN Treino    t ON t.ID_Treino       = te.ID_Treino
+JOIN Exercicio e ON e.Nome_Exercicio  = te.Nome_Exercicio
+JOIN Aluno     a ON a.CPF_Aluno       = t.CPF_Aluno;
+GO
+```
+
+Os resultados estão documentados em `outputs/queries/Tabela_Treino-Ex-Aluno.png`.
+
+---
+
+### Aluno ↔ Produto (`select_aluno_produto.sql`)
+
+Cruza `Produto_Aluno` com `Produto` e `Aluno`, mostrando o que cada aluno comprou, o preço unitário e calculando o **preço final** (`Quantidade_Comprada × Preco_Unitario`).
+
+```sql
+USE gym_db
+
+SELECT
+    p.Nome_Produto,
+    a.Nome_Aluno,
+    p.Preco_Unitario,
+    pa.Quantidade_Comprada,
+    pa.Quantidade_Comprada * p.Preco_Unitario AS Preço_Final
+FROM Produto_Aluno pa
+JOIN Produto p ON p.ID_Produto = pa.ID_Produto
+JOIN Aluno   a ON a.CPF_Aluno  = pa.CPF_Aluno;
+GO
+```
+
+Os resultados estão documentados em `outputs/queries/Aluno_Compra_Select.png`.
+
+---
+
+## 🔎 Query Parametrizada — Aluno ↔ Aula
+
+O script `sql/queries/parametrizada/aluno_aula_parametrizada.py` é uma versão interativa da query `select_aluno_aula.sql`. Ele roda no terminal e serve dois contextos de uso distintos com os mesmos dados, mudando apenas o filtro aplicado.
+
+### Contextos
+
+**Contexto 1 — Aluno consultando suas aulas:** o aluno informa o próprio nome e o sistema retorna todas as aulas em que está matriculado, junto com o professor responsável por cada uma.
+
+**Contexto 2 — Professor ou funcionário consultando uma aula:** o usuário informa o nome de uma aula e o sistema retorna todos os alunos matriculados nela, com o professor confirmado no rodapé.
+
+Ambos os contextos usam `LIKE` com `%termo%`, permitindo buscas parciais sem necessidade de digitar o nome completo.
+
+### Como usar
+
+**1. Configure o `.env` na pasta `sql/queries/parametrizada/`:**
+
+```env
+DB_PASSWORD=SuaSenhaForte123!
+```
+
+**2. Instale as dependências:**
+
+```bash
+pip install pyodbc python-dotenv
+```
+
+**3. Execute:**
+
+```bash
+python sql/queries/parametrizada/aluno_aula_parametrizada.py
+```
+
+### Código
+
+```python
+import pyodbc
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+conn = pyodbc.connect(
+    "Driver={ODBC Driver 18 for SQL Server};"
+    "Server=localhost,1433;"
+    "Database=gym_db;"
+    "UID=sa;"
+    f"PWD={os.getenv('DB_PASSWORD')};"
+    "TrustServerCertificate=yes;"
+)
+cursor = conn.cursor()
+
+# ============================================
+# BLOCO 1 — Contexto do Aluno
+# Aluno informa o nome e vê suas aulas
+# ============================================
+print("\n" + "="*60)
+print("🔍 CONSULTA POR ALUNO")
+print("="*60)
+
+nome_aluno = input("Digite o nome do aluno: ").strip()
+
+cursor.execute("""
+    SELECT
+        au.Nome_Aula,
+        al.Nome_Aluno,
+        p.Nome AS Nome_Professor
+    FROM Aluno_Aula aa
+    JOIN Aluno     al ON al.CPF_Aluno    = aa.CPF_Aluno
+    JOIN Aula      au ON au.Nome_Aula    = aa.Nome_Aula
+    JOIN Professor p  ON p.CPF_Professor = au.CPF_Professor
+    WHERE al.Nome_Aluno LIKE ?
+""", f"%{nome_aluno}%")
+
+resultados_aluno = cursor.fetchall()
+
+print(f"\n📚 AULAS DO ALUNO: {nome_aluno}")
+print("-" * 50)
+print(f"{'Aula':<30} {'Professor':<25}")
+print("-" * 50)
+
+if resultados_aluno:
+    for row in resultados_aluno:
+        print(f"{row.Nome_Aula:<30} {row.Nome_Professor:<25}")
+    print("-" * 50)
+    print(f"Total: {len(resultados_aluno)} aulas")
+else:
+    print("❌ Nenhuma aula encontrada")
+print("="*60)
+
+# ============================================
+# BLOCO 2 — Contexto do Professor / Funcionário
+# Informa o nome de uma aula e vê seus alunos
+# ============================================
+print("\n" + "="*60)
+print("🔍 CONSULTA POR AULA")
+print("="*60)
+
+nome_aula = input("Digite o nome da aula: ").strip()
+
+cursor.execute("""
+    SELECT
+        au.Nome_Aula,
+        al.Nome_Aluno,
+        p.Nome AS Nome_Professor
+    FROM Aluno_Aula aa
+    JOIN Aluno     al ON al.CPF_Aluno    = aa.CPF_Aluno
+    JOIN Aula      au ON au.Nome_Aula    = aa.Nome_Aula
+    JOIN Professor p  ON p.CPF_Professor = au.CPF_Professor
+    WHERE au.Nome_Aula LIKE ?
+""", f"%{nome_aula}%")
+
+resultados_aula = cursor.fetchall()
+
+print(f"\n🏋️ ALUNOS DA AULA: {nome_aula}")
+print("-" * 50)
+print(f"{'Aluno':<30} {'Professor':<25}")
+print("-" * 50)
+
+if resultados_aula:
+    professor = resultados_aula[0].Nome_Professor
+    for row in resultados_aula:
+        print(f"{row.Nome_Aluno:<30} {row.Nome_Professor:<25}")
+    print("-" * 50)
+    print(f"Professor: {professor}")
+    print(f"Total: {len(resultados_aula)} alunos")
+else:
+    print("❌ Nenhum aluno encontrado")
+print("="*60)
+
+cursor.close()
+conn.close()
+print("\n🔒 Conexão encerrada")
+```
+
+Os resultados de ambos os contextos estão documentados em `outputs/queries/query_parametrizada/`.
 
 ---
 
@@ -131,21 +366,79 @@ gym_db (SQL Server)
        ▼ TRANSFORM
   Validação do resultado — TOP 20 da Fato_Venda
   com SKs e com JOIN nas dimensões
+       │
+       ▼ UPLOAD
+  AWS S3 — pasta fixa, sobrescrita a cada execução
+  └── gym_dw/fato_venda/
+      ├── fato_venda_sks.csv
+      └── fato_venda_completo.csv
 ```
 
 ### Etapas
 
 **Extract** — lê todas as tabelas do `gym_db` e salva em CSV com timestamp em `pipeline/extractions/<snapshot>/`. Cria uma pasta por execução, garantindo histórico de snapshots.
 
-**Load** — cria o banco `gym_dw` e as tabelas do Star Schema se não existirem, depois carrega as dimensões e a fato na ordem correta. Inclui geração do staging de vendas com datas sintéticas (ver [Decisões do DW](#decisões-do-dw)). A `Fato_Venda` é inserida em lote via `fast_executemany`.
+**Load** — verifica se existe o banco `gym_dw` e as tabelas do Star Schema, cria se não existirem, depois carrega as dimensões e a fato na ordem correta. Inclui geração do staging de vendas com datas sintéticas (ver [Decisões do DW](#decisões-do-dw)). A `Fato_Venda` é inserida em lote via `fast_executemany`.
 
 **Transform** — valida o resultado do Load exibindo os primeiros 20 registros da `Fato_Venda` em dois formatos: com os SKs brutos e com JOIN nas dimensões para leitura humana.
+
+Os resultados da execução estão documentados em `outputs/ETL_outputs/`.
 
 ### Executar
 
 ```bash
 pip install pyodbc pandas python-dotenv
 python pipeline/ETL_gym.py
+```
+
+---
+
+## ☁️ Upload para AWS S3
+
+O script `pipeline/aws_bucket/upload_s3.py` lê a `Fato_Venda` do `gym_dw` e sobe dois CSVs para um bucket S3 — um com os SKs brutos e outro com JOIN completo nas dimensões, incluindo `Total_Venda` calculado.
+
+### Estrutura no bucket
+
+```
+<seu-bucket>/
+└── gym_dw/
+    └── fato_venda/
+        ├── fato_venda_sks.csv        # SKs + Quantia_Comprada
+        └── fato_venda_completo.csv   # Dados legíveis com JOIN nas dimensões
+```
+
+A pasta é fixa — cada execução sobrescreve os arquivos anteriores.
+
+### Configuração
+
+**1. Instale as dependências:**
+
+```bash
+pip install boto3 pyodbc pandas python-dotenv
+```
+
+**2. Configure as credenciais AWS** — uma vez só, via CLI:
+
+```bash
+aws configure
+```
+
+Preencha com `AWS Access Key ID`, `AWS Secret Access Key`, região (`sa-east-1` para São Paulo) e formato `json`. As chaves são geradas em **IAM → Users → Security credentials** no console da AWS.
+
+**3. Crie o arquivo `pipeline/aws_bucket/.env`:**
+
+```env
+DB_PASSWORD=SuaSenhaForte123!
+AWS_BUCKET=seu-bucket-aqui
+AWS_REGION=sa-east-1
+```
+
+> ⚠️ Nunca suba o `.env` para o repositório. Ele já está no `.gitignore`.
+
+**4. Execute após rodar o ETL:**
+
+```bash
+python pipeline/aws_bucket/upload_s3.py
 ```
 
 ---
@@ -579,38 +872,14 @@ python faker/generate_data.py
 
 ---
 
-## 🔍 Validando os Dados Gerados
-
-```sql
-USE gym_db
-
-SELECT * FROM Aula;
-GO
-
-SELECT * FROM Professor
-WHERE CPF_Professor = '416.972.853-09'
-OR CPF_Professor = '968.054.713-20';
-GO
-
-SELECT * FROM Produto_Aluno;
-GO
-
-SELECT * FROM Aluno
-WHERE CPF_Aluno IN (SELECT CPF_Aluno FROM Produto_Aluno);
-GO
-```
-
-Os resultados estão documentados em `outputs/faker_outputs/select_overall_data/`.
-
----
-
 ## 🛠️ Tecnologias
 
 | Tecnologia | Uso |
 |---|---|
 | **SQL Server 2022** | Banco transacional (gym_db) e dimensional (gym_dw) |
 | **Docker** | Containerização do ambiente |
-| **Python** | Geração de dados com Faker e pipeline ETL |
+| **Python** | Geração de dados com Faker, pipeline ETL, queries interativas e upload S3 |
+| **AWS S3** | Armazenamento dos dados analíticos na nuvem |
 | **ODBC Driver 17/18** | Conexão Python → SQL Server via pyodbc |
 | **draw.io** | Modelagem do MER, DER e Star Schema |
 | **VS Code** | Ambiente de desenvolvimento |
@@ -628,9 +897,10 @@ Os resultados estão documentados em `outputs/faker_outputs/select_overall_data/
 - [x] Geração de dados com Faker
 - [x] `.env` isolado na pasta `faker/`
 - [x] Evidências de execução — `outputs/`
-- [x] Queries de validação — `select_overall_test.sql`
+- [x] Queries N:N — Aluno↔Aula, Treino↔Exercício, Aluno↔Produto
+- [x] Query parametrizada — dois contextos (aluno e professor)
 - [x] Pipeline ETL — Extract e Load
 - [x] Star Schema — `gym_dw`
 - [x] Load dimensional completo — `Dim_Data`, `Dim_Aluno`, `Dim_Produto`, `Fato_Venda`
 - [x] Transform — validação do resultado via JOIN nas dimensões
-- [ ] Upload para AWS S3
+- [x] Upload para AWS S3 — `fato_venda_sks.csv` e `fato_venda_completo.csv`

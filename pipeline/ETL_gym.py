@@ -11,7 +11,7 @@ load_dotenv()
 # Conexão — gym_db (transacional)
 # ============================================
 conn = pyodbc.connect(
-    "Driver={ODBC Driver 17 for SQL Server};"
+    "Driver={ODBC Driver 18 for SQL Server};"
     "Server=localhost,1433;"
     "Database=gym_db;"
     "UID=sa;"
@@ -329,7 +329,7 @@ def transformar():
     print("\n📊 Fato_Venda — SKs (TOP 20):")
     df_sk = pd.read_sql("""
         SELECT TOP 20
-            SK_Fato,
+            SK_Venda,
             SK_Produto,
             SK_Aluno,
             SK_Data,
@@ -341,7 +341,7 @@ def transformar():
     print("\n📊 Fato_Venda — Dados legíveis (TOP 20):")
     df_completo = pd.read_sql("""
         SELECT TOP 20
-            f.SK_Fato,
+            f.SK_Venda,
             p.ID_Produto,
             p.Nome_Produto,
             a.CPF_Aluno,

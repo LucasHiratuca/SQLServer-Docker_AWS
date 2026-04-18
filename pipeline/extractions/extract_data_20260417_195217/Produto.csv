@@ -1,0 +1,11 @@
+﻿ID_Produto,Tipo_Produto,Quantidade,Nome_Produto,Preco_Unitario
+1,Suplemento,13,Whey Protein,89.9
+2,Suplemento,17,Creatina,59.9
+3,Suplemento,80,Pre-Treino,79.9
+4,Acessorio,28,Luva de Treino,49.9
+5,Acessorio,93,Cinto Lombar,99.9
+6,Roupa,62,Camiseta Dry Fit,39.9
+7,Roupa,80,Shorts Treino,49.9
+8,Bebida,100,Agua Mineral,3.5
+9,Bebida,96,Isotonico,8.9
+10,Equipamento,55,Corda de Pular,29.9
