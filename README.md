@@ -17,7 +17,7 @@
 
 ## 📌 Sobre o Projeto
 
-Projeto de engenharia de dados construído do zero — desde o modelo conceitual (MER) até a implementação física em SQL Server rodando via Docker. Inclui geração de dados sintéticos com Faker, queries analíticas sobre as relações N:N, pipeline ETL completo, um Data Warehouse dimensional (Star Schema) focado na análise de vendas da academia e upload dos dados para AWS S3.
+Projeto de engenharia de dados construído do zero — desde o modelo conceitual (MER) até a implementação física em SQL Server rodando via Docker. O modelo passou por uma revisão completa: o MER e DER originais foram remodelados para corrigir tipos de dados, renomear entidades e expandir relacionamentos N:N, resultando na estrutura atual aprovada. Inclui geração de dados sintéticos com Faker, queries analíticas sobre as relações N:N, pipeline ETL completo, um Data Warehouse dimensional (Star Schema) focado na análise de vendas da academia e upload dos dados para AWS S3.
 
 ---
 
@@ -48,6 +48,7 @@ gym-data-modeling/
 │   │   ├── creation.png
 │   │   └── post_create.png
 │   ├── create_tables/
+│   │   ├── creation.png
 │   │   ├── no_tables.png
 │   │   └── post_creation.png
 │   ├── drop_table/
@@ -69,14 +70,14 @@ gym-data-modeling/
 │   ├── queries/
 │   │   ├── Aluno_Compra_Select.png
 │   │   ├── Aula-Aluno.png
-│   │   ├── Tabela_Treino-Ex-Aluno.png
-│   │   └── query_parametrizada/
+│   │   └── Tabela_Treino-Ex-Aluno.png
+│   │── query_parametrizada/
 │   │       ├── Alunos_em_Aula.png
-│   │       └── Aula_p_Aluno.png
-│   └── views_test/
-│       ├── select_sys_databases.png
-│       ├── select_sys_tables1.png
-│       └── select_sys_tables2.png
+│   │       └── Aula_p_Aluno.png   
+│   ├── views_test/
+│   │   ├── select_sys_databases.png
+│   │   ├── select_sys_tables1.png
+│   │   └── select_sys_tables2.png
 │   └── criacao_container.png
 ├── pipeline/
 │   ├── aws_bucket/
@@ -367,7 +368,7 @@ gym_db (SQL Server)
   Validação do resultado — TOP 20 da Fato_Venda
   com SKs e com JOIN nas dimensões
        │
-       ▼ UPLOAD
+       ▼ UPLOAD (implementado, não executado — ver decisão)
   AWS S3 — pasta fixa, sobrescrita a cada execução
   └── gym_dw/fato_venda/
       ├── fato_venda_sks.csv
@@ -397,6 +398,8 @@ python pipeline/ETL_gym.py
 
 O script `pipeline/aws_bucket/upload_s3.py` lê a `Fato_Venda` do `gym_dw` e sobe dois CSVs para um bucket S3 — um com os SKs brutos e outro com JOIN completo nas dimensões, incluindo `Total_Venda` calculado.
 
+> ⚠️ **O upload não foi executado neste projeto.** Ver [Decisão sobre o Upload S3](#decisão-sobre-o-upload-s3).
+
 ### Estrutura no bucket
 
 ```
@@ -406,8 +409,6 @@ O script `pipeline/aws_bucket/upload_s3.py` lê a `Fato_Venda` do `gym_dw` e sob
         ├── fato_venda_sks.csv        # SKs + Quantia_Comprada
         └── fato_venda_completo.csv   # Dados legíveis com JOIN nas dimensões
 ```
-
-A pasta é fixa — cada execução sobrescreve os arquivos anteriores.
 
 ### Configuração
 
@@ -505,49 +506,15 @@ Gerada inteiramente na ETL a partir das datas sintéticas de compra. Permite an�
 | `Dia` | `INT` | Dia extraído |
 | `Dia_Semana` | `VARCHAR(20)` | Nome do dia em português |
 
-### Insights disponíveis
 
-Com o Star Schema carregado, é possível responder perguntas como:
+### Índices do DW 
 
-```sql
--- Alunos que mais treinam compram mais?
-SELECT
-    da.Quantia_Treinos,
-    AVG(fv.Quantia_Comprada) AS Media_Comprada
-FROM Fato_Venda fv
-JOIN Dim_Aluno da ON fv.SK_Aluno = da.SK_Aluno
-GROUP BY da.Quantia_Treinos
-ORDER BY da.Quantia_Treinos;
+| Índice | Tabela | Coluna(s) | Objetivo |
+|---|---|---|---|
+| `IX_Fato_Venda_SK_Aluno` | `Fato_Venda` | `SK_Aluno` | FK → Dim_Aluno |
+| `IX_Fato_Venda_SK_Produto` | `Fato_Venda` | `SK_Produto` | FK → Dim_Produto |
+| `IX_Fato_Venda_SK_Data` | `Fato_Venda` | `SK_Data` | FK → Dim_Data |
 
--- Quais meses concentram mais vendas?
-SELECT
-    dd.Ano, dd.Mes,
-    SUM(fv.Quantia_Comprada) AS Total_Vendido
-FROM Fato_Venda fv
-JOIN Dim_Data dd ON fv.SK_Data = dd.SK_Data
-GROUP BY dd.Ano, dd.Mes
-ORDER BY dd.Ano, dd.Mes;
-
--- Produtos mais vendidos por plano
-SELECT
-    da.Nome_Plano,
-    dp.Nome_Produto,
-    SUM(fv.Quantia_Comprada) AS Total_Vendido
-FROM Fato_Venda fv
-JOIN Dim_Aluno   da ON fv.SK_Aluno   = da.SK_Aluno
-JOIN Dim_Produto dp ON fv.SK_Produto = dp.SK_Produto
-GROUP BY da.Nome_Plano, dp.Nome_Produto
-ORDER BY da.Nome_Plano, Total_Vendido DESC;
-
--- Ticket médio por dia da semana
-SELECT
-    dd.Dia_Semana,
-    AVG(fv.Quantia_Comprada * dp.Preco_Unitario) AS Ticket_Medio
-FROM Fato_Venda fv
-JOIN Dim_Data    dd ON fv.SK_Data    = dd.SK_Data
-JOIN Dim_Produto dp ON fv.SK_Produto = dp.SK_Produto
-GROUP BY dd.Dia_Semana;
-```
 
 ### Decisões do DW
 
@@ -612,7 +579,7 @@ Execute o arquivo `sql/script_dw/create_dw.sql` após o `gym_db` estar criado e 
 
 A tabela `Produto_Aluno` registra a relação N:N entre alunos e produtos. O campo `Quantidade_Comprada` é um atributo do próprio relacionamento — não pertence ao Produto nem ao Aluno isoladamente, mas à combinação dos dois.
 
-> 💡 Valores derivados como total gasto e ticket médio são calculados via SELECT — não estão armazenados.
+> 💡 Valores derivados como total gasto, são calculados via SELECT — não estão armazenados.
 
 ### `Treino_Exercicio` — `Carga` e `Reps` além das FKs
 
@@ -756,7 +723,7 @@ Valores monetários usam `DECIMAL(10,2)` em vez de `INT` para preservar as casas
 **1. Clone o repositório:**
 
 ```bash
-git clone https://github.com/seu-usuario/gym-data-modeling.git
+git clone (link do repo)
 cd gym-data-modeling
 ```
 
@@ -839,7 +806,7 @@ brew install msodbcsql18
 **2. Instale as dependências Python:**
 
 ```bash
-pip install pyodbc faker faker-br python-dotenv
+pip install pyodbc faker python-dotenv
 ```
 
 **3. Configure o `.env` na pasta `faker/`:**
@@ -879,7 +846,7 @@ python faker/generate_data.py
 | **SQL Server 2022** | Banco transacional (gym_db) e dimensional (gym_dw) |
 | **Docker** | Containerização do ambiente |
 | **Python** | Geração de dados com Faker, pipeline ETL, queries interativas e upload S3 |
-| **AWS S3** | Armazenamento dos dados analíticos na nuvem |
+| **AWS S3** | Armazenamento dos dados analíticos na nuvem (implementado, não executado) |
 | **ODBC Driver 17/18** | Conexão Python → SQL Server via pyodbc |
 | **draw.io** | Modelagem do MER, DER e Star Schema |
 | **VS Code** | Ambiente de desenvolvimento |
@@ -903,4 +870,17 @@ python faker/generate_data.py
 - [x] Star Schema — `gym_dw`
 - [x] Load dimensional completo — `Dim_Data`, `Dim_Aluno`, `Dim_Produto`, `Fato_Venda`
 - [x] Transform — validação do resultado via JOIN nas dimensões
-- [x] Upload para AWS S3 — `fato_venda_sks.csv` e `fato_venda_completo.csv`
+- [x] Script de upload AWS S3 — implementado em `pipeline/aws_bucket/upload_s3.py`
+- [ ] Execução do upload em produção — não realizada (ver decisão abaixo)
+
+---
+
+## 📎 Decisão sobre o Upload S3
+
+O script `pipeline/aws_bucket/upload_s3.py` foi desenvolvido e está funcional — lê a `Fato_Venda` do `gym_dw`, monta dois DataFrames e os envia diretamente para um bucket S3 via `boto3` sem gravar arquivos locais intermediários.
+
+A execução em ambiente real foi omitida por uma decisão deliberada de custo: criar e manter um bucket S3 ativo gera cobranças na AWS mesmo dentro do free tier quando combinado com operações de PUT e transferência de dados. Para um projeto de portfólio sem receita, esse custo não se justifica.
+
+O que foi implementado e pode ser verificado no código: conexão com `gym_dw`, execução dos dois SELECTs da `Fato_Venda`, conversão para CSV em memória via `io.StringIO`, upload via `s3.put_object` com `ContentType` correto, leitura de credenciais via `.env` e `~/.aws/credentials`.
+
+Caso queira executar: configure `aws configure` com suas credenciais, preencha o `.env` com o nome do bucket e rode `python pipeline/aws_bucket/upload_s3.py` após o ETL.
