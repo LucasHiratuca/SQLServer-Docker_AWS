@@ -4,20 +4,22 @@
   <img src="https://img.shields.io/badge/SQL%20Server-2022-CC2927?logo=microsoft-sql-server&logoColor=white" />
   <img src="https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white" />
   <img src="https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&logoColor=white" />
+  <img src="https://img.shields.io/badge/Apache%20Spark-3.x-E25A1C?logo=apachespark&logoColor=white" />
   <img src="https://img.shields.io/badge/AWS-S3-FF9900?logo=amazon-aws&logoColor=white" />
   <img src="https://img.shields.io/badge/license-MIT-22c55e" />
 </p>
 
 <p align="center">
   Projeto de engenharia de dados focado em modelagem relacional, containerização e pipeline ETL.<br/>
-  Do modelo conceitual (MER) à implementação física em SQL Server via Docker, com Data Warehouse dimensional e upload para AWS S3.
+  Do modelo conceitual (MER) à implementação física em SQL Server via Docker, com Data Warehouse dimensional e upload para AWS S3.<br/>
+  Inclui uma segunda versão do pipeline ETL implementada com <strong>Apache Spark + Spark SQL</strong>.
 </p>
 
 ---
 
 ## 📌 Sobre o Projeto
 
-Projeto de engenharia de dados construído do zero — desde o modelo conceitual (MER) até a implementação física em SQL Server rodando via Docker. O modelo passou por uma revisão completa: o MER e DER originais foram remodelados para corrigir tipos de dados, renomear entidades e expandir relacionamentos N:N, resultando na estrutura atual aprovada. Inclui geração de dados sintéticos com Faker, queries analíticas sobre as relações N:N, pipeline ETL completo, um Data Warehouse dimensional (Star Schema) focado na análise de vendas da academia e upload dos dados para AWS S3.
+Projeto de engenharia de dados construído do zero — desde o modelo conceitual (MER) até a implementação física em SQL Server rodando via Docker. O modelo passou por uma revisão completa: o MER e DER originais foram remodelados para corrigir tipos de dados, renomear entidades e expandir relacionamentos N:N, resultando na estrutura atual aprovada. Inclui geração de dados sintéticos com Faker, queries analíticas sobre as relações N:N, pipeline ETL completo, um Data Warehouse dimensional (Star Schema) focado na análise de vendas da academia e upload dos dados para AWS S3. O pipeline ETL possui duas implementações: uma com `pyodbc` + `pandas` e outra com **Apache Spark + Spark SQL**.
 
 ---
 
@@ -84,7 +86,8 @@ gym-data-modeling/
 │   │   ├── .env                        # Credenciais AWS e nome do bucket
 │   │   └── upload_s3.py                # Upload da Fato_Venda para o S3
 │   ├── .env                            # Variáveis de ambiente (senha do banco)
-│   ├── ETL_gym.py                      # Pipeline ETL: Extract, Load e Transform
+│   ├── ETL_gym.py                      # Pipeline ETL: pyodbc + pandas
+│   ├── Spark_ETL.py                    # Pipeline ETL alternativo: Apache Spark + Spark SQL
 │   └── extractions/                    # CSVs por execução + staging de vendas
 ├── sql/
 │   ├── queries/
@@ -391,6 +394,116 @@ Os resultados da execução estão documentados em `outputs/ETL_outputs/`.
 pip install pyodbc pandas python-dotenv
 python pipeline/ETL_gym.py
 ```
+
+---
+
+## ⚡ Pipeline ETL — Versão Apache Spark (`Spark_ETL.py`)
+
+O arquivo `pipeline/Spark_ETL.py` é uma reimplementação do mesmo pipeline ETL usando **Apache Spark** com **Spark SQL**, mantendo o mesmo Star Schema de destino e os mesmos dados de origem, mas com uma arquitetura distribuída em vez de processamento single-process via `pyodbc`.
+
+### Por que Spark
+
+O `ETL_gym.py` original usa `pyodbc` e `pandas` — toda a leitura e transformação acontece em um único processo Python. O Spark distribui essas operações entre workers, abre conexões JDBC paralelas por partição e executa JOINs e agregações de forma distribuída. Para os volumes deste projeto a diferença de tempo é pequena, mas a arquitetura escala para volumes muito maiores sem mudança de código.
+
+### Diferenças em relação ao ETL original
+
+| Aspecto | `ETL_gym.py` | `Spark_ETL.py` |
+|---|---|---|
+| Conexão | `pyodbc` (processo único) | JDBC (paralelo por worker) |
+| Transformações | `pandas` + Python | Spark SQL (`spark.sql()`) |
+| Leitura paralela | Não | Sim — particionamento por ID |
+| Escrita | `fast_executemany` | `df.write.jdbc()` em batch |
+| Views intermediárias | Variáveis Python | `createOrReplaceTempView()` |
+| CSVs intermediários | Sim (`extractions/`) | Não — tudo em memória |
+
+### Fluxo
+
+```
+gym_db (SQL Server)
+       │
+       ▼ EXTRACT — spark.read.jdbc() com particionamento por ID
+  Views temporárias Spark (em memória, sem disco)
+  ├── aluno
+  ├── treino
+  ├── produto
+  └── produto_aluno
+       │
+       ▼ TRANSFORM — spark.sql() com Spark SQL puro
+  Dimensões e staging montados via SQL
+  ├── Dim_Aluno     (LEFT JOIN + COALESCE para treinos)
+  ├── Dim_Produto   (projeção direta)
+  ├── vendas        (staging com gerar_data() UDF)
+  └── Dim_Data      (DISTINCT + YEAR/MONTH/DAY + UDF dia_semana_pt)
+       │
+       ▼ LOAD — df.write.jdbc() direto no gym_dw
+  gym_dw — Star Schema
+  ├── Dim_Data
+  ├── Dim_Aluno
+  ├── Dim_Produto
+  └── Fato_Venda    (JOIN com SKs lidos de volta do gym_dw)
+       │
+       ▼ VALIDAR — spark.sql() com JOIN nas dimensões
+  TOP 20 da Fato_Venda em dois formatos (SKs brutos e legível)
+```
+
+### UDFs registradas
+
+Como `Produto_Aluno` não tem `Data_Compra`, o Spark gera datas sintéticas via UDF Python registrada no contexto SQL:
+
+```python
+spark.udf.register("gerar_data",    _gerar_data_aleatoria, DateType())
+spark.udf.register("dia_semana_pt", _dia_semana_pt,         StringType())
+```
+
+`spark.udf.register()` torna as funções acessíveis dentro de qualquer `spark.sql()`. Sem esse registro, o SQL não enxerga as funções — `F.udf()` sozinho só funciona na API Python.
+
+### Pré-requisitos
+
+**1. Java 11+** (necessário para o Spark):
+
+```bash
+# Ubuntu/Debian
+sudo apt install openjdk-11-jdk
+
+# macOS
+brew install openjdk@11
+```
+
+**2. Driver JDBC do SQL Server** — baixe o `.jar` e coloque na raiz do projeto:
+
+```
+https://aka.ms/mssql-jdbc
+```
+
+O arquivo esperado é `mssql-jdbc-12.4.2.jre11.jar`. Se usar outra versão, ajuste o `.config("spark.jars", ...)` no topo do `Spark_ETL.py`.
+
+**3. Instale as dependências Python:**
+
+```bash
+pip install pyspark python-dotenv
+```
+
+**4. Configure o `.env` na pasta `pipeline/`** (o mesmo do `ETL_gym.py`):
+
+```env
+DB_PASSWORD=SuaSenhaForte123!
+```
+
+### Executar
+
+```bash
+python pipeline/Spark_ETL.py
+```
+
+### Observações
+
+**Particionamento JDBC** — tabelas maiores (`Treino`, `Produto`) são lidas com particionamento por coluna numérica (`lowerBound`, `upperBound`, `numPartitions=4`), permitindo que cada worker leia um intervalo de IDs em paralelo. Tabelas sem chave numérica adequada (`Aluno`, `Produto_Aluno`) são lidas sem particionamento.
+
+**`shuffle.partitions = 8`** — o padrão do Spark é 200 partições após operações de shuffle (JOIN, GROUP BY). Para os volumes deste projeto, 8 é mais adequado e evita overhead desnecessário.
+
+**SKs lidos de volta do DW** — após inserir as dimensões, o Spark lê os Surrogate Keys gerados pelo `IDENTITY` do SQL Server e os registra como views (`sk_aluno`, `sk_produto`, `sk_data`) para montar a `Fato_Venda`. Esse padrão é necessário porque os SKs não existem antes da escrita.
+
+**Sem arquivos intermediários** — diferente do `ETL_gym.py`, o Spark não gera CSVs em `extractions/`. Toda a comunicação entre etapas acontece por views temporárias registradas na sessão Spark.
 
 ---
 
@@ -845,9 +958,11 @@ python faker/generate_data.py
 |---|---|
 | **SQL Server 2022** | Banco transacional (gym_db) e dimensional (gym_dw) |
 | **Docker** | Containerização do ambiente |
-| **Python** | Geração de dados com Faker, pipeline ETL, queries interativas e upload S3 |
+| **Python** | Geração de dados com Faker, pipelines ETL, queries interativas e upload S3 |
+| **Apache Spark** | Pipeline ETL distribuído com Spark SQL (`Spark_ETL.py`) |
 | **AWS S3** | Armazenamento dos dados analíticos na nuvem (implementado, não executado) |
 | **ODBC Driver 17/18** | Conexão Python → SQL Server via pyodbc |
+| **JDBC** | Conexão Spark → SQL Server no pipeline distribuído |
 | **draw.io** | Modelagem do MER, DER e Star Schema |
 | **VS Code** | Ambiente de desenvolvimento |
 
@@ -866,10 +981,11 @@ python faker/generate_data.py
 - [x] Evidências de execução — `outputs/`
 - [x] Queries N:N — Aluno↔Aula, Treino↔Exercício, Aluno↔Produto
 - [x] Query parametrizada — dois contextos (aluno e professor)
-- [x] Pipeline ETL — Extract e Load
+- [x] Pipeline ETL — Extract e Load (`ETL_gym.py`)
 - [x] Star Schema — `gym_dw`
 - [x] Load dimensional completo — `Dim_Data`, `Dim_Aluno`, `Dim_Produto`, `Fato_Venda`
 - [x] Transform — validação do resultado via JOIN nas dimensões
+- [x] Pipeline ETL distribuído com Apache Spark + Spark SQL (`Spark_ETL.py`)
 - [x] Script de upload AWS S3 — implementado em `pipeline/aws_bucket/upload_s3.py`
 - [ ] Execução do upload em produção — não realizada (ver decisão abaixo)
 
